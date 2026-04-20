@@ -6,10 +6,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liste des demandes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1100px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px 0 15px;
+        }
+
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            background-color: #fafafa;
+            border: 1px solid #e3e3e3;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <h1>Liste des demandes</h1>
+    <a class="btn btn-primary" href="/home">Retour a l'accueil</a>
 
     <c:choose>
         <c:when test="${not empty demandes}">
@@ -39,7 +112,7 @@
             </table>
         </c:when>
         <c:otherwise>
-            <div class="empty">Aucune demande trouvée.</div>
+            <div class="empty-message">Aucune demande trouvee.</div>
         </c:otherwise>
     </c:choose>
 </div>
