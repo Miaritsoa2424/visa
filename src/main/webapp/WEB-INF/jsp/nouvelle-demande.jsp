@@ -286,7 +286,7 @@
     </div>
 
     <div class="form-card">
-        <form action="#" method="post">
+        <form action="/demande/creer" method="post">
             <div class="form-grid">
                 <details class="section">
                     <summary>
@@ -297,35 +297,35 @@
                         <div class="section-grid">
                             <div class="field col-6">
                                 <label for="nom">Nom</label>
-                                <input id="nom" name="nom" type="text" placeholder="Nom">
+                                <input id="nom" name="nom" type="text" placeholder="Nom" value="Ndiaye">
                             </div>
                             <div class="field col-6">
                                 <label for="prenom">Prenom</label>
-                                <input id="prenom" name="prenom" type="text" placeholder="Prenom">
+                                <input id="prenom" name="prenom" type="text" placeholder="Prenom" value="Aminata">
                             </div>
                             <div class="field col-6">
                                 <label for="nomJeuneFille">Nom de jeune fille</label>
-                                <input id="nomJeuneFille" name="nomJeuneFille" type="text" placeholder="Nom de jeune fille">
+                                <input id="nomJeuneFille" name="nomJeuneFille" type="text" placeholder="Nom de jeune fille" value="Traore">
                             </div>
                             <div class="field col-6">
                                 <label for="email">Email</label>
-                                <input id="email" name="email" type="email" placeholder="exemple@mail.com">
+                                <input id="email" name="email" type="email" placeholder="exemple@mail.com" value="aminata.ndiaye@example.com">
                             </div>
                             <div class="field col-4">
                                 <label for="dateNaissance">Date de naissance</label>
-                                <input id="dateNaissance" name="dateNaissance" type="date">
+                                <input id="dateNaissance" name="dateNaissance" type="date" value="1998-05-14">
                             </div>
                             <div class="field col-4">
                                 <label for="lieuNaissance">Lieu de naissance</label>
-                                <input id="lieuNaissance" name="lieuNaissance" type="text" placeholder="Lieu de naissance">
+                                <input id="lieuNaissance" name="lieuNaissance" type="text" placeholder="Lieu de naissance" value="Dakar">
                             </div>
                             <div class="field col-4">
                                 <label for="telephone">Telephone</label>
-                                <input id="telephone" name="telephone" type="tel" placeholder="Telephone">
+                                <input id="telephone" name="telephone" type="tel" placeholder="Telephone" value="770000000">
                             </div>
                             <div class="field full-width">
                                 <label for="adresse">Adresse</label>
-                                <textarea id="adresse" name="adresse" placeholder="Adresse complete"></textarea>
+                                <textarea id="adresse" name="adresse" placeholder="Adresse complete">Avenue Cheikh Anta Diop, Dakar</textarea>
                             </div>
                             <div class="field col-6">
                                 <label for="nationalite">Nationalite</label>
@@ -358,11 +358,11 @@
                         <div class="section-grid">
                             <div class="field col-6">
                                 <label for="numeroPasseport">Numero passeport</label>
-                                <input id="numeroPasseport" name="numeroPasseport" type="text" placeholder="Numero du passeport">
+                                <input id="numeroPasseport" name="numeroPasseport" type="text" placeholder="Numero du passeport" value="SN12345678">
                             </div>
                             <div class="field col-6">
                                 <label for="dateExpirationPasseport">Date d'expiration</label>
-                                <input id="dateExpirationPasseport" name="dateExpirationPasseport" type="date">
+                                <input id="dateExpirationPasseport" name="dateExpirationPasseport" type="date" value="2030-12-31">
                             </div>
                         </div>
                     </div>
@@ -377,15 +377,15 @@
                         <div class="section-grid">
                             <div class="field col-6">
                                 <label for="numeroVisaTransformable">Numero visa transformable</label>
-                                <input id="numeroVisaTransformable" name="numeroVisaTransformable" type="text" placeholder="Numero du visa transformable">
+                                <input id="numeroVisaTransformable" name="numeroVisaTransformable" type="text" placeholder="Numero du visa transformable" value="VISA-TR-001">
                             </div>
                             <div class="field col-6">
                                 <label for="dateArrivee">Date d'arrivee</label>
-                                <input id="dateArrivee" name="dateArrivee" type="date">
+                                <input id="dateArrivee" name="dateArrivee" type="date" value="2026-04-21">
                             </div>
                             <div class="field col-6">
                                 <label for="dateExpirationVisaTransformable">Date d'expiration</label>
-                                <input id="dateExpirationVisaTransformable" name="dateExpirationVisaTransformable" type="date">
+                                <input id="dateExpirationVisaTransformable" name="dateExpirationVisaTransformable" type="date" value="2027-04-21">
                             </div>
                         </div>
                     </div>
@@ -400,7 +400,7 @@
                         <div class="section-grid">
                             <div class="field col-4">
                                 <label for="dateDemande">Date demande</label>
-                                <input id="dateDemande" name="dateDemande" type="date">
+                                <input id="dateDemande" name="dateDemande" type="date" value="2026-04-21">
                             </div>
                             <div class="field col-4">
                                 <label for="typeVisa">Type visa</label>
@@ -412,7 +412,7 @@
                                 </select>
                             </div>
                             <div class="field col-4">
-                                <input id="typeDemandeId" name="typeDemandeId" type="hidden" value="${typeDemandeId}">
+                                <input id="typeDemandeId" name="typeDemandeId" type="hidden" value="${not empty typeDemandeId ? typeDemandeId : 1}">
                             </div>
 
                             <div class="dynamic-champs">

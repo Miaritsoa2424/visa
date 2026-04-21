@@ -10,10 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.visa.dto.CreateDemandeDTO;
 import com.visa.entity.ChampFournir;
+import com.visa.entity.Demande;
 import com.visa.entity.TypeDemande;
 import com.visa.service.ChampFournirService;
 import com.visa.service.NationaliteService;
@@ -44,7 +48,13 @@ public class DemandeController {
     }
 
     @GetMapping("/demande/nouvelle")
-    public String chooseDemandType(@RequestParam("typeDemandeId") Integer typeDemandeId, Model model) {
+    public String chooseDemandType(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
+            Model model) {
+        Integer typeDemandeId = parseTypeDemandeId(typeDemandeIdParam);
+        if (typeDemandeId == null) {
+            return "redirect:/home";
+        }
+
         TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
         
         // Charger les listes via le service
@@ -72,5 +82,46 @@ public class DemandeController {
         }
 
         return response;
+    }
+
+    @PostMapping("/demande/creer")
+    public String createDemande(CreateDemandeDTO dto,
+            @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds,
+            RedirectAttributes redirectAttributes) {
+        try {
+            // Assigner les champFournirIds au DTO
+            dto.champFournirIds = champFournirIds;
+
+            // Appeler le service pour créer la demande
+            Demande demande = demandeService.createDemande(dto);
+
+            // Message de succès
+            redirectAttributes.addFlashAttribute("succesMessage", 
+                "Demande créée avec succès (ID: " + demande.getId() + ")");
+
+            return "redirect:/demandes";
+        } catch (Exception e) {
+            // Message d'erreur
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Erreur lors de la création de la demande: " + e.getMessage());
+
+            if (dto.typeDemandeId == null) {
+                return "redirect:/home";
+            }
+
+            return "redirect:/demande/nouvelle?typeDemandeId=" + dto.typeDemandeId;
+        }
+    }
+
+    private Integer parseTypeDemandeId(String typeDemandeIdParam) {
+        if (typeDemandeIdParam == null || typeDemandeIdParam.isBlank() || "null".equalsIgnoreCase(typeDemandeIdParam)) {
+            return null;
+        }
+
+        try {
+            return Integer.valueOf(typeDemandeIdParam);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
     }
 }

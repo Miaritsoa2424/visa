@@ -1,0 +1,34 @@
+================================
+voici les rectifications a faire
+1. section etat civil:
+    c'est okey
+2. section passeport
+    - enleves le champ: personne rattachee, statut passeport
+3. section visa transformable
+    - enleves les champs: personne rattachee, type de transformation
+4. section visa demande
+    - enleves le champ observation
+==============================
+
+maintenant on va integrer la base de donnees avec le formulaire 
+1. section etat civil:
+    - la liste deroulante de nationalite et de situation familiale
+2. section visa demande:
+    - la liste deroulante de type visa 
+    - change le champ type demande en hidden et il prendra la valeur envoye par la page precedente en GET: http://localhost:8080/demande/nouvelle?typeDemandeId=1
+**Note**: Comment proceder au niveau de repartitions de taches des fichiers?
+    - respecte bien l'architecture MVC de spring boot
+
+=============================
+le controller n'appelera pas directement un repository mais il doit passer par un fichier de service d'abord qui lui ensuite appelera le repository
+
+============================
+dans la section visa demande les champs qui seront afficher seront dynamique selon le type de visa choisi par l'utilisateur: les champs sont definis par la table champ_fournir qui seront des cases a cocher
+=============================
+enleves les textes comme ca: Champs derives de la table visa_transformable.
+montre que les sections sont bien des dropdown paske ca ne se voit pas
+==============================
+maintenant on va passer a l'insertion de la demande dans la base de donnees:
+    - cree une fonction dans DemandeService qui inserera les donnees dans les tables correspondantes et dans l'odre approprie pour eviter les erreurs de foreign key
+    - cree les repositories necessaires si pas encore existant et ajoutes les fonctions necessaires sinon
+montre moi ton plan avant d'implementer
