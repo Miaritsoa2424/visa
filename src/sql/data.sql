@@ -4,7 +4,7 @@ INSERT INTO situation_familiale (libelle) VALUES ('Celibataire'), ('Marie(e)'), 
 INSERT INTO nationalite (libelle) VALUES ('Francaise'), ('Canadienne'), ('Senegalaise'), ('Italienne'), ('Chinoise');
 INSERT INTO pays (libelle) VALUES ('Madagascar'), ('France'), ('Senegal'), ('Canada');
 INSERT INTO type_demande (libelle) VALUES ('Premiere demande'), ('Renouvellement'), ('Duplicata');
-INSERT INTO type_statut_demande (id, libelle) VALUES ('1', 'Deposee'), ('2', 'En cours'), ('3', 'Validee');
+INSERT INTO type_statut_demande (id, libelle) VALUES ('1', 'Cree'), ('2', 'Scanee'), ('3', 'Visa validee');
 INSERT INTO type_statut_visa (id, libelle, rang) VALUES ('1', 'Actif', 1), ('2', 'Expire', 2);
 INSERT INTO champ_fournir (libelle, type_donnee, type_visa_id) VALUES ('Certificat Scolaire', 'PDF', 1), ('Justificatif Ressources', 'TEXT', 1), ('Contrat Travail', 'PDF', 2), ('SIRET Employeur', 'TEXT', 2);
 

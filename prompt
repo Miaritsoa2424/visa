@@ -52,3 +52,6 @@ dans le front il faut aussi marcher les champ obligatoire pour que l'utilisateur
 l'insertion dans la table dossier_proffesionnel: 
     si c'est un radio dans valeur on entre true ou false 
 donc les champs_fournir pour le type de visa demande seront tous dans dossier_professionnel mais ceux que l'utilisateur a coche sera avec une valeur true, s'il est pas coche alors la valeur sera false
+
+=============================================== FIXXXXXX ===============================
+en plus d'inserer dans la table demande il faut aussi inserer dans la table statut_demande, toutes les demandes auront un statut cree au tout debut
