@@ -86,6 +86,17 @@ public class DemandeService {
         return visaTransformableRepository.findFirstByPersonneIdOrderByIdAsc(personneId).orElse(null);
     }
 
+    public boolean canEditDemandeByTypeStatutDemande(Integer demandeId) {
+        StatutDemande statutDemande = statutDemandeRepository
+                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
+                .orElse(null);
+        if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
+            return false;
+        }
+
+        return "1".equals(statutDemande.getTypeStatutDemande().getId());
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public Demande createDemande(CreateDemandeDTO dto) {
         try {
@@ -132,6 +143,10 @@ public class DemandeService {
     public Demande updateDemande(Integer demandeId, CreateDemandeDTO dto) {
         try {
             validateRequiredFields(dto);
+
+            if (!canEditDemandeByTypeStatutDemande(demandeId)) {
+                throw new BusinessValidationException("Modification interdite: le type_statut_demande doit etre egal a 1.");
+            }
 
             Demande demande = demandeRepository.findById(demandeId)
                     .orElseThrow(() -> new BusinessValidationException("Demande non trouvee: " + demandeId));

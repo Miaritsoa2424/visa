@@ -81,6 +81,11 @@
             background-color: #1e40af;
         }
 
+        .btn-edit.is-disabled {
+            background-color: #94a3b8;
+            box-shadow: none;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -150,7 +155,9 @@
                         <td>${demande.typeVisa.libelle}</td>
                         <td>${demande.typeDemande.libelle}</td>
                         <td>
-                            <a class="btn btn-edit" href="/demande/modifier?id=${demande.id}">Modifier</a>
+                            <a class="btn btn-edit js-edit-btn"
+                               href="/demande/modifier?id=${demande.id}"
+                               data-can-edit="${canEditByDemandeId[demande.id]}">Modifier</a>
                         </td>
                     </tr>
                 </c:forEach>
@@ -163,5 +170,23 @@
     </c:choose>
 </div>
 </main>
+<script>
+    (function () {
+        const editButtons = document.querySelectorAll('.js-edit-btn');
+
+        editButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                const canEdit = button.dataset.canEdit === 'true';
+                if (canEdit) {
+                    return;
+                }
+
+                event.preventDefault();
+                button.textContent = 'Non modifiable';
+                button.classList.add('is-disabled');
+            });
+        });
+    })();
+</script>
 </body>
 </html>

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -45,7 +46,14 @@ public class DemandeController {
 
     @GetMapping("/demandes")
     public String listDemandes(Model model) {
-        model.addAttribute("demandes", demandeService.getDemandes());
+        List<Demande> demandes = demandeService.getDemandes();
+        Map<Integer, Boolean> canEditByDemandeId = demandes.stream()
+                .collect(Collectors.toMap(
+                        Demande::getId,
+                demande -> demandeService.canEditDemandeByTypeStatutDemande(demande.getId())));
+
+        model.addAttribute("demandes", demandes);
+        model.addAttribute("canEditByDemandeId", canEditByDemandeId);
         return "demandes";
     }
 
@@ -72,6 +80,11 @@ public class DemandeController {
     @GetMapping("/demande/modifier")
     public String editDemande(@RequestParam("id") Integer demandeId, Model model, RedirectAttributes redirectAttributes) {
         try {
+            if (!demandeService.canEditDemandeByTypeStatutDemande(demandeId)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Modification interdite: le type_statut_demande doit etre egal a 1.");
+                return "redirect:/demandes";
+            }
+
             Demande demande = demandeService.getDemandeById(demandeId);
             Integer typeDemandeId = demande.getTypeDemande() == null ? null : demande.getTypeDemande().getId();
             TypeDemande typeDemande = demande.getTypeDemande();
@@ -198,6 +211,11 @@ public class DemandeController {
 
         if (demandeId == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Identifiant de demande invalide.");
+            return "redirect:/demandes";
+        }
+
+        if (!demandeService.canEditDemandeByTypeStatutDemande(demandeId)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Modification interdite: le type_statut_demande doit etre egal a 1.");
             return "redirect:/demandes";
         }
 
