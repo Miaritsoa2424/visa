@@ -1,13 +1,14 @@
 package com.visa.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +34,8 @@ import com.visa.repository.PasseportRepository;
 import com.visa.repository.PersonneRepository;
 import com.visa.repository.SituationFamilialeRepository;
 import com.visa.repository.StatutDemandeRepository;
-import com.visa.repository.TypeStatutDemandeRepository;
 import com.visa.repository.TypeDemandeRepository;
+import com.visa.repository.TypeStatutDemandeRepository;
 import com.visa.repository.TypeVisaRepository;
 import com.visa.repository.VisaTransformableRepository;
 
@@ -67,6 +68,33 @@ public class DemandeService {
 
     public List<Demande> getDemandes(){
         return demandeRepository.findAll();
+    }
+
+    public Demande getDemandeById(Integer demandeId) {
+        return demandeRepository.findById(demandeId)
+                .orElseThrow(() -> new BusinessValidationException("Demande non trouvee: " + demandeId));
+    }
+
+    public Set<Integer> getSelectedChampFournirIds(Integer demandeId) {
+        return dossierProfessionnelRepository.findByDemandeId(demandeId).stream()
+                .map(dossier -> dossier.getChampFournir() == null ? null : dossier.getChampFournir().getId())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    public VisaTransformable getVisaTransformableByPersonneId(Integer personneId) {
+        return visaTransformableRepository.findFirstByPersonneIdOrderByIdAsc(personneId).orElse(null);
+    }
+
+    public boolean canEditDemandeByTypeStatutDemande(Integer demandeId) {
+        StatutDemande statutDemande = statutDemandeRepository
+                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
+                .orElse(null);
+        if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
+            return false;
+        }
+
+        return "1".equals(statutDemande.getTypeStatutDemande().getId());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -108,6 +136,101 @@ public class DemandeService {
             throw new BusinessValidationException("Violation de contrainte en base de donnees: " + exception.getMostSpecificCause().getMessage());
         } catch (RuntimeException exception) {
             throw new BusinessValidationException("Erreur metier lors de la creation de la demande: " + exception.getMessage());
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Demande updateDemande(Integer demandeId, CreateDemandeDTO dto) {
+        try {
+            validateRequiredFields(dto);
+
+            if (!canEditDemandeByTypeStatutDemande(demandeId)) {
+                throw new BusinessValidationException("Modification interdite: le type_statut_demande doit etre egal a 1.");
+            }
+
+            Demande demande = demandeRepository.findById(demandeId)
+                    .orElseThrow(() -> new BusinessValidationException("Demande non trouvee: " + demandeId));
+
+            Passeport passeport = demande.getPasseport();
+            if (passeport == null || passeport.getPersonne() == null) {
+                throw new BusinessValidationException("La demande ne contient pas de passeport/personne a modifier.");
+            }
+
+            Personne personne = passeport.getPersonne();
+
+            Nationalite nationalite = nationaliteRepository.findById(dto.getNationalite())
+                    .orElseThrow(() -> new BusinessValidationException("Nationalite non trouvee: " + dto.getNationalite()));
+            SituationFamiliale situationFamiliale = situationFamilialeRepository.findById(dto.getSituationFamiliale())
+                    .orElseThrow(() -> new BusinessValidationException("Situation familiale non trouvee: " + dto.getSituationFamiliale()));
+
+            personne.setNom(dto.getNom());
+            personne.setPrenom(dto.getPrenom());
+            personne.setNomJeuneFille(dto.getNomJeuneFille());
+            personne.setEmail(normalize(dto.getEmail()));
+            personne.setDateNaissance(dto.getDateNaissance());
+            personne.setLieuNaissance(dto.getLieuNaissance());
+            personne.setAdresse(dto.getAdresse());
+            personne.setTelephone(dto.getTelephone());
+            personne.setNationalite(nationalite);
+            personne.setSituationFamiliale(situationFamiliale);
+            personne = personneRepository.save(personne);
+
+            String numeroPasseport = normalize(dto.getNumeroPasseport());
+            Passeport passeportByNumero = passeportRepository.findFirstByNumeroOrderByIdAsc(numeroPasseport).orElse(null);
+            if (passeportByNumero != null && !Objects.equals(passeportByNumero.getId(), passeport.getId())) {
+                throw new BusinessValidationException("Le numero du passeport existe deja pour une autre personne.");
+            }
+
+            passeport.setNumero(numeroPasseport);
+            passeport.setDateExpiration(dto.getDateExpirationPasseport());
+            passeport.setPersonne(personne);
+            passeport = passeportRepository.save(passeport);
+
+            VisaTransformable visaTransformable = visaTransformableRepository
+                    .findFirstByPersonneIdOrderByIdAsc(personne.getId())
+                    .orElse(new VisaTransformable());
+
+            String numeroVisaTransformable = normalize(dto.getNumeroVisaTransformable());
+            VisaTransformable visaByNumero = visaTransformableRepository.findFirstByNumeroOrderByIdAsc(numeroVisaTransformable)
+                    .orElse(null);
+            if (visaByNumero != null
+                    && visaTransformable.getId() != null
+                    && !Objects.equals(visaByNumero.getId(), visaTransformable.getId())) {
+                throw new BusinessValidationException("Le numero du visa transformable existe deja pour une autre personne.");
+            }
+            if (visaByNumero != null && visaTransformable.getId() == null) {
+                throw new BusinessValidationException("Le numero du visa transformable existe deja pour une autre personne.");
+            }
+
+            visaTransformable.setNumero(numeroVisaTransformable);
+            visaTransformable.setDateArrivee(dto.getDateArrivee());
+            visaTransformable.setDateExpiration(dto.getDateExpirationVisaTransformable());
+            visaTransformable.setPersonne(personne);
+            visaTransformableRepository.save(visaTransformable);
+
+            TypeVisa typeVisa = typeVisaRepository.findById(dto.getTypeVisa())
+                    .orElseThrow(() -> new BusinessValidationException("Type visa non trouve: " + dto.getTypeVisa()));
+            TypeDemande typeDemande = typeDemandeRepository.findById(dto.getTypeDemandeId())
+                    .orElseThrow(() -> new BusinessValidationException("Type demande non trouve: " + dto.getTypeDemandeId()));
+
+            demande.setDateDemande(dto.getDateDemande());
+            demande.setPasseport(passeport);
+            demande.setTypeVisa(typeVisa);
+            demande.setTypeDemande(typeDemande);
+            demande = demandeRepository.save(demande);
+
+            dossierProfessionnelRepository.deleteByDemandeId(demandeId);
+            saveDossierProfessionnels(dto, demande);
+
+            return demande;
+        } catch (BusinessValidationException exception) {
+            throw exception;
+        } catch (IncorrectResultSizeDataAccessException exception) {
+            throw new BusinessValidationException("Plusieurs enregistrements identiques existent deja en base pour cette valeur. Merci de contacter l'administration pour nettoyer les doublons.");
+        } catch (DataIntegrityViolationException exception) {
+            throw new BusinessValidationException("Violation de contrainte en base de donnees: " + exception.getMostSpecificCause().getMessage());
+        } catch (RuntimeException exception) {
+            throw new BusinessValidationException("Erreur metier lors de la modification de la demande: " + exception.getMessage());
         }
     }
 

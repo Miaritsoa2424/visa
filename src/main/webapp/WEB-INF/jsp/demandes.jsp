@@ -68,6 +68,24 @@
             background-color: #2563eb;
         }
 
+        .btn-edit {
+            background-color: #1d4ed8;
+            color: white;
+            box-shadow: 0 8px 16px rgba(29, 78, 216, 0.25);
+            margin: 0;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .btn-edit:hover {
+            background-color: #1e40af;
+        }
+
+        .btn-edit.is-disabled {
+            background-color: #94a3b8;
+            box-shadow: none;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -124,6 +142,7 @@
                     <th>Numéro passeport</th>
                     <th>Type visa</th>
                     <th>Type demande</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -135,6 +154,11 @@
                         <td>${demande.passeport.numero}</td>
                         <td>${demande.typeVisa.libelle}</td>
                         <td>${demande.typeDemande.libelle}</td>
+                        <td>
+                            <a class="btn btn-edit js-edit-btn"
+                               href="/demande/modifier?id=${demande.id}"
+                               data-can-edit="${canEditByDemandeId[demande.id]}">Modifier</a>
+                        </td>
                     </tr>
                 </c:forEach>
                 </tbody>
@@ -146,5 +170,23 @@
     </c:choose>
 </div>
 </main>
+<script>
+    (function () {
+        const editButtons = document.querySelectorAll('.js-edit-btn');
+
+        editButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                const canEdit = button.dataset.canEdit === 'true';
+                if (canEdit) {
+                    return;
+                }
+
+                event.preventDefault();
+                button.textContent = 'Non modifiable';
+                button.classList.add('is-disabled');
+            });
+        });
+    })();
+</script>
 </body>
 </html>
