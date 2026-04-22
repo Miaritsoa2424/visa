@@ -2,6 +2,8 @@ package com.visa.entity;
 
 import java.time.LocalDate;
 
+import com.visa.exception.BusinessValidationException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -52,7 +54,10 @@ public class Passeport {
     }
 
     public void setNumero(String numero) {
-        this.numero = numero;
+        if (numero == null || numero.isBlank()) {
+            throw new BusinessValidationException("Le numero du passeport est obligatoire.");
+        }
+        this.numero = numero.trim();
     }
 
     public LocalDate getDateExpiration() {
@@ -60,6 +65,12 @@ public class Passeport {
     }
 
     public void setDateExpiration(LocalDate dateExpiration) {
+        if (dateExpiration == null) {
+            throw new BusinessValidationException("La date d'expiration du passeport est obligatoire.");
+        }
+        if (!dateExpiration.isAfter(LocalDate.now())) {
+            throw new BusinessValidationException("La date d'expiration du passeport doit etre dans le futur.");
+        }
         this.dateExpiration = dateExpiration;
     }
 
@@ -68,6 +79,9 @@ public class Passeport {
     }
 
     public void setPersonne(Personne personne) {
+        if (personne == null) {
+            throw new BusinessValidationException("Le passeport doit etre rattache a une personne.");
+        }
         this.personne = personne;
     }
 }

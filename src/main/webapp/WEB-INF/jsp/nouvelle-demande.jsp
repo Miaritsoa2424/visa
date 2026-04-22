@@ -130,6 +130,18 @@
             font-weight: 600;
         }
 
+        .required-mark {
+            color: #dc2626;
+            font-weight: 800;
+            margin-left: 4px;
+        }
+
+        .section-hint {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
         .section-body {
             padding: 20px;
             border-top: 1px solid var(--border);
@@ -261,6 +273,34 @@
             font-size: 13px;
         }
 
+        .alert {
+            grid-column: span 12;
+            padding: 16px 18px;
+            border-radius: 12px;
+            border-left: 4px solid;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .alert strong {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .alert-error {
+            background: #fee;
+            border-color: #f33;
+            color: #c00;
+        }
+
+        .alert-success {
+            background: #efe;
+            border-color: #3a3;
+            color: #060;
+        }
+
         @media (max-width: 900px) {
             .field.col-6,
             .field.col-4 {
@@ -285,6 +325,18 @@
         <div class="badge">Type de demande selectionne: ${typeDemande.libelle}</div>
     </div>
 
+    <c:if test="${not empty errorMessage}">
+        <div class="alert alert-error">
+            <strong>Erreur:</strong> ${errorMessage}
+        </div>
+    </c:if>
+
+    <c:if test="${not empty succesMessage}">
+        <div class="alert alert-success">
+            <strong>Succes:</strong> ${succesMessage}
+        </div>
+    </c:if>
+
     <div class="form-card">
         <form action="/demande/creer" method="post">
             <div class="form-grid">
@@ -296,40 +348,40 @@
                     <div class="section-body">
                         <div class="section-grid">
                             <div class="field col-6">
-                                <label for="nom">Nom</label>
-                                <input id="nom" name="nom" type="text" placeholder="Nom" value="Ndiaye">
+                                <label for="nom">Nom <span class="required-mark">*</span></label>
+                                <input id="nom" name="nom" type="text" placeholder="Nom" required>
                             </div>
                             <div class="field col-6">
                                 <label for="prenom">Prenom</label>
-                                <input id="prenom" name="prenom" type="text" placeholder="Prenom" value="Aminata">
+                                <input id="prenom" name="prenom" type="text" placeholder="Prenom">
                             </div>
                             <div class="field col-6">
                                 <label for="nomJeuneFille">Nom de jeune fille</label>
-                                <input id="nomJeuneFille" name="nomJeuneFille" type="text" placeholder="Nom de jeune fille" value="Traore">
+                                <input id="nomJeuneFille" name="nomJeuneFille" type="text" placeholder="Nom de jeune fille">
                             </div>
                             <div class="field col-6">
                                 <label for="email">Email</label>
-                                <input id="email" name="email" type="email" placeholder="exemple@mail.com" value="aminata.ndiaye@example.com">
+                                <input id="email" name="email" type="email" placeholder="exemple@mail.com">
                             </div>
                             <div class="field col-4">
-                                <label for="dateNaissance">Date de naissance</label>
-                                <input id="dateNaissance" name="dateNaissance" type="date" value="1998-05-14">
+                                <label for="dateNaissance">Date de naissance <span class="required-mark">*</span></label>
+                                <input id="dateNaissance" name="dateNaissance" type="date" required>
                             </div>
                             <div class="field col-4">
                                 <label for="lieuNaissance">Lieu de naissance</label>
-                                <input id="lieuNaissance" name="lieuNaissance" type="text" placeholder="Lieu de naissance" value="Dakar">
+                                <input id="lieuNaissance" name="lieuNaissance" type="text" placeholder="Lieu de naissance">
                             </div>
                             <div class="field col-4">
-                                <label for="telephone">Telephone</label>
-                                <input id="telephone" name="telephone" type="tel" placeholder="Telephone" value="770000000">
+                                <label for="telephone">Telephone <span class="required-mark">*</span></label>
+                                <input id="telephone" name="telephone" type="tel" placeholder="Telephone" required>
                             </div>
                             <div class="field full-width">
-                                <label for="adresse">Adresse</label>
-                                <textarea id="adresse" name="adresse" placeholder="Adresse complete">Avenue Cheikh Anta Diop, Dakar</textarea>
+                                <label for="adresse">Adresse <span class="required-mark">*</span></label>
+                                <textarea id="adresse" name="adresse" placeholder="Adresse complete" required></textarea>
                             </div>
                             <div class="field col-6">
-                                <label for="nationalite">Nationalite</label>
-                                <select id="nationalite" name="nationalite">
+                                <label for="nationalite">Nationalite <span class="required-mark">*</span></label>
+                                <select id="nationalite" name="nationalite" required>
                                     <option value="">Selectionner une nationalite</option>
                                     <c:forEach items="${nationalites}" var="nationalite">
                                         <option value="${nationalite.id}">${nationalite.libelle}</option>
@@ -337,8 +389,8 @@
                                 </select>
                             </div>
                             <div class="field col-6">
-                                <label for="situationFamiliale">Situation familiale</label>
-                                <select id="situationFamiliale" name="situationFamiliale">
+                                <label for="situationFamiliale">Situation familiale <span class="required-mark">*</span></label>
+                                <select id="situationFamiliale" name="situationFamiliale" required>
                                     <option value="">Selectionner une situation</option>
                                     <c:forEach items="${situationsFamiliales}" var="situation">
                                         <option value="${situation.id}">${situation.libelle}</option>
@@ -357,12 +409,12 @@
                     <div class="section-body">
                         <div class="section-grid">
                             <div class="field col-6">
-                                <label for="numeroPasseport">Numero passeport</label>
-                                <input id="numeroPasseport" name="numeroPasseport" type="text" placeholder="Numero du passeport" value="SN12345678">
+                                <label for="numeroPasseport">Numero passeport <span class="required-mark">*</span></label>
+                                <input id="numeroPasseport" name="numeroPasseport" type="text" placeholder="Numero du passeport" required>
                             </div>
                             <div class="field col-6">
-                                <label for="dateExpirationPasseport">Date d'expiration</label>
-                                <input id="dateExpirationPasseport" name="dateExpirationPasseport" type="date" value="2030-12-31">
+                                <label for="dateExpirationPasseport">Date d'expiration <span class="required-mark">*</span></label>
+                                <input id="dateExpirationPasseport" name="dateExpirationPasseport" type="date" required>
                             </div>
                         </div>
                     </div>
@@ -374,18 +426,19 @@
                         <span class="summary-note">Visa en cours de transformation</span>
                     </summary>
                     <div class="section-body">
+                        <div class="section-hint">Tous les champs de cette section sont obligatoires.</div>
                         <div class="section-grid">
                             <div class="field col-6">
-                                <label for="numeroVisaTransformable">Numero visa transformable</label>
-                                <input id="numeroVisaTransformable" name="numeroVisaTransformable" type="text" placeholder="Numero du visa transformable" value="VISA-TR-001">
+                                <label for="numeroVisaTransformable">Numero visa transformable <span class="required-mark">*</span></label>
+                                <input id="numeroVisaTransformable" name="numeroVisaTransformable" type="text" placeholder="Numero du visa transformable" required>
                             </div>
                             <div class="field col-6">
-                                <label for="dateArrivee">Date d'arrivee</label>
-                                <input id="dateArrivee" name="dateArrivee" type="date" value="2026-04-21">
+                                <label for="dateArrivee">Date d'arrivee <span class="required-mark">*</span></label>
+                                <input id="dateArrivee" name="dateArrivee" type="date" required>
                             </div>
                             <div class="field col-6">
-                                <label for="dateExpirationVisaTransformable">Date d'expiration</label>
-                                <input id="dateExpirationVisaTransformable" name="dateExpirationVisaTransformable" type="date" value="2027-04-21">
+                                <label for="dateExpirationVisaTransformable">Date d'expiration <span class="required-mark">*</span></label>
+                                <input id="dateExpirationVisaTransformable" name="dateExpirationVisaTransformable" type="date" required>
                             </div>
                         </div>
                     </div>
@@ -399,12 +452,12 @@
                     <div class="section-body">
                         <div class="section-grid">
                             <div class="field col-4">
-                                <label for="dateDemande">Date demande</label>
-                                <input id="dateDemande" name="dateDemande" type="date" value="2026-04-21">
+                                <label for="dateDemande">Date demande <span class="required-mark">*</span></label>
+                                <input id="dateDemande" name="dateDemande" type="date" required>
                             </div>
                             <div class="field col-4">
-                                <label for="typeVisa">Type visa</label>
-                                <select id="typeVisa" name="typeVisa">
+                                <label for="typeVisa">Type visa <span class="required-mark">*</span></label>
+                                <select id="typeVisa" name="typeVisa" required>
                                     <option value="">Selectionner un type visa</option>
                                     <c:forEach items="${typesVisa}" var="typeVisa">
                                         <option value="${typeVisa.id}">${typeVisa.libelle}</option>
@@ -412,7 +465,7 @@
                                 </select>
                             </div>
                             <div class="field col-4">
-                                <input id="typeDemandeId" name="typeDemandeId" type="hidden" value="${not empty typeDemandeId ? typeDemandeId : 1}">
+                                <input id="typeDemandeId" name="typeDemandeId" type="hidden" value="${typeDemandeId}">
                             </div>
 
                             <div class="dynamic-champs">

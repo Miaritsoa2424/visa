@@ -2,6 +2,8 @@ package com.visa.entity;
 
 import java.time.LocalDate;
 
+import com.visa.exception.BusinessValidationException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -56,7 +58,10 @@ public class VisaTransformable {
     }
 
     public void setNumero(String numero) {
-        this.numero = numero;
+        if (numero == null || numero.isBlank()) {
+            throw new BusinessValidationException("Le numero du visa transformable est obligatoire quand cette section est renseignee.");
+        }
+        this.numero = numero.trim();
     }
 
     public LocalDate getDateArrivee() {
@@ -64,6 +69,12 @@ public class VisaTransformable {
     }
 
     public void setDateArrivee(LocalDate dateArrivee) {
+        if (dateArrivee == null) {
+            throw new BusinessValidationException("La date d'entree du visa transformable est obligatoire quand cette section est renseignee.");
+        }
+        if (dateArrivee.isAfter(LocalDate.now())) {
+            throw new BusinessValidationException("La date d'entree ne doit pas etre dans le futur.");
+        }
         this.dateArrivee = dateArrivee;
     }
 
@@ -72,6 +83,15 @@ public class VisaTransformable {
     }
 
     public void setDateExpiration(LocalDate dateExpiration) {
+        if (dateExpiration == null) {
+            throw new BusinessValidationException("La date d'expiration du visa transformable est obligatoire quand cette section est renseignee.");
+        }
+        if (!dateExpiration.isAfter(LocalDate.now())) {
+            throw new BusinessValidationException("La date d'expiration doit etre dans le futur.");
+        }
+        if (this.dateArrivee != null && dateExpiration.isBefore(this.dateArrivee)) {
+            throw new BusinessValidationException("La date d'expiration du visa transformable doit etre apres la date d'entree.");
+        }
         this.dateExpiration = dateExpiration;
     }
 
@@ -80,6 +100,9 @@ public class VisaTransformable {
     }
 
     public void setPersonne(Personne personne) {
+        if (personne == null) {
+            throw new BusinessValidationException("Le visa transformable doit etre rattache a une personne.");
+        }
         this.personne = personne;
     }
 }

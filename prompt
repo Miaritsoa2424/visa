@@ -32,3 +32,23 @@ maintenant on va passer a l'insertion de la demande dans la base de donnees:
     - cree une fonction dans DemandeService qui inserera les donnees dans les tables correspondantes et dans l'odre approprie pour eviter les erreurs de foreign key
     - cree les repositories necessaires si pas encore existant et ajoutes les fonctions necessaires sinon
 montre moi ton plan avant d'implementer
+============================
+je veux maintenant controller les donnees:
+    - date d'expiration doivent etre dans le futur
+    - date d'entree ne doit pas etre dans le futur
+    - les champs obligatoire sont: nom,date de naissance, adresse, nationalite, numero, passeport(tous les champs de la section passeport), les autres sont facultatifs
+Note je veux controller cela niveau metier
+
+PASS123465
+
+
+les erreur de restriction de primary key doivent etre bien interprete
+- une personne peut faire plusieurs demande donc s'il existe dans la base de donnees on a plus besoin de creer une nouvelle ligne dans la base de donnees (c'est l'email la colonne unique pour identifier cela), meme chose pour les passeport et les visa transformable (on ne les recree pas s'il existe deja dans la base de donnees leur numero sera le repere)
+
+============================================
+dans le front il faut aussi marcher les champ obligatoire pour que l'utilisateur soit a l'aise
+
+... 
+l'insertion dans la table dossier_proffesionnel: 
+    si c'est un radio dans valeur on entre true ou false 
+donc les champs_fournir pour le type de visa demande seront tous dans dossier_professionnel mais ceux que l'utilisateur a coche sera avec une valeur true, s'il est pas coche alors la valeur sera false

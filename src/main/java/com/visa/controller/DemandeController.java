@@ -1,5 +1,6 @@
 package com.visa.controller;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.visa.dto.CreateDemandeDTO;
 import com.visa.entity.ChampFournir;
-import com.visa.entity.Demande;
 import com.visa.entity.TypeDemande;
+import com.visa.exception.BusinessValidationException;
 import com.visa.service.ChampFournirService;
 import com.visa.service.NationaliteService;
 import com.visa.service.SituationFamilialeService;
@@ -84,32 +85,106 @@ public class DemandeController {
         return response;
     }
 
+
     @PostMapping("/demande/creer")
-    public String createDemande(CreateDemandeDTO dto,
+    public String createDemande(@RequestParam Map<String, String> formValues,
             @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds,
             RedirectAttributes redirectAttributes) {
+        CreateDemandeDTO dto = new CreateDemandeDTO();
+
+        dto.setNom(formValues.get("nom"));
+        dto.setPrenom(formValues.get("prenom"));
+        dto.setNomJeuneFille(formValues.get("nomJeuneFille"));
+        dto.setEmail(formValues.get("email"));
+        dto.setDateNaissance(parseLocalDate(formValues.get("dateNaissance")));
+        dto.setLieuNaissance(formValues.get("lieuNaissance"));
+        dto.setAdresse(formValues.get("adresse"));
+        dto.setTelephone(formValues.get("telephone"));
+        dto.setNationalite(parseInteger(formValues.get("nationalite")));
+        dto.setSituationFamiliale(parseInteger(formValues.get("situationFamiliale")));
+
+        dto.setNumeroPasseport(formValues.get("numeroPasseport"));
+        dto.setDateExpirationPasseport(parseLocalDate(formValues.get("dateExpirationPasseport")));
+
+        dto.setNumeroVisaTransformable(formValues.get("numeroVisaTransformable"));
+        dto.setDateArrivee(parseLocalDate(formValues.get("dateArrivee")));
+        dto.setDateExpirationVisaTransformable(parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
+
+        dto.setDateDemande(parseLocalDate(formValues.get("dateDemande")));
+        dto.setTypeVisa(parseInteger(formValues.get("typeVisa")));
+        dto.setTypeDemandeId(parseInteger(formValues.get("typeDemandeId")));
+
+        dto.setChampFournirIds(champFournirIds);
+
         try {
-            // Assigner les champFournirIds au DTO
-            dto.champFournirIds = champFournirIds;
-
-            // Appeler le service pour créer la demande
-            Demande demande = demandeService.createDemande(dto);
-
-            // Message de succès
-            redirectAttributes.addFlashAttribute("succesMessage", 
-                "Demande créée avec succès (ID: " + demande.getId() + ")");
-
+            demandeService.createDemande(dto);
+            redirectAttributes.addFlashAttribute("succesMessage", "Demande creee avec succes.");
             return "redirect:/demandes";
-        } catch (Exception e) {
-            // Message d'erreur
-            redirectAttributes.addFlashAttribute("errorMessage", 
-                "Erreur lors de la création de la demande: " + e.getMessage());
+        } catch (BusinessValidationException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur technique lors de la creation de la demande.");
+            return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
+        }
+    }
+    // @PostMapping("/demande/creer")
+    // @ResponseBody
+    // public CreateDemandeDTO createDemande(@RequestParam Map<String, String> formValues,
+    //         @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds) {
+    //     CreateDemandeDTO dto = new CreateDemandeDTO();
 
-            if (dto.typeDemandeId == null) {
-                return "redirect:/home";
-            }
+    //     // Etat civil
+    //     dto.nom = formValues.get("nom");
+    //     dto.prenom = formValues.get("prenom");
+    //     dto.nomJeuneFille = formValues.get("nomJeuneFille");
+    //     dto.email = formValues.get("email");
+    //     dto.dateNaissance = parseLocalDate(formValues.get("dateNaissance"));
+    //     dto.lieuNaissance = formValues.get("lieuNaissance");
+    //     dto.adresse = formValues.get("adresse");
+    //     dto.telephone = formValues.get("telephone");
+    //     dto.nationalite = parseInteger(formValues.get("nationalite"));
+    //     dto.situationFamiliale = parseInteger(formValues.get("situationFamiliale"));
 
-            return "redirect:/demande/nouvelle?typeDemandeId=" + dto.typeDemandeId;
+    //     // Passeport
+    //     dto.numeroPasseport = formValues.get("numeroPasseport");
+    //     dto.dateExpirationPasseport = parseLocalDate(formValues.get("dateExpirationPasseport"));
+
+    //     // Visa transformable
+    //     dto.numeroVisaTransformable = formValues.get("numeroVisaTransformable");
+    //     dto.dateArrivee = parseLocalDate(formValues.get("dateArrivee"));
+    //     dto.dateExpirationVisaTransformable = parseLocalDate(formValues.get("dateExpirationVisaTransformable"));
+
+    //     // Demande
+    //     dto.dateDemande = parseLocalDate(formValues.get("dateDemande"));
+    //     dto.typeVisa = parseInteger(formValues.get("typeVisa"));
+    //     dto.typeDemandeId = parseInteger(formValues.get("typeDemandeId"));
+
+    //     dto.champFournirIds = champFournirIds;
+    //     return dto;
+    // }
+
+    private Integer parseInteger(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Integer.valueOf(value);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
+
+    private LocalDate parseLocalDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        try {
+            return LocalDate.parse(value);
+        } catch (Exception exception) {
+            return null;
         }
     }
 
