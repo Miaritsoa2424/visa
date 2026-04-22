@@ -10,4 +10,6 @@ import com.visa.entity.VisaTransformable;
 @Repository
 public interface VisaTransformableRepository extends JpaRepository<VisaTransformable, Integer> {
     Optional<VisaTransformable> findFirstByNumeroOrderByIdAsc(String numero);
+
+    Optional<VisaTransformable> findFirstByPersonneIdOrderByIdAsc(Integer personneId);
 }

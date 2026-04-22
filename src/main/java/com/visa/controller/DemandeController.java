@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.visa.dto.CreateDemandeDTO;
 import com.visa.entity.ChampFournir;
+import com.visa.entity.Demande;
 import com.visa.entity.TypeDemande;
 import com.visa.exception.BusinessValidationException;
 import com.visa.service.ChampFournirService;
@@ -66,6 +67,35 @@ public class DemandeController {
         model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
         
         return "nouvelle-demande";
+    }
+
+    @GetMapping("/demande/modifier")
+    public String editDemande(@RequestParam("id") Integer demandeId, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Demande demande = demandeService.getDemandeById(demandeId);
+            Integer typeDemandeId = demande.getTypeDemande() == null ? null : demande.getTypeDemande().getId();
+            TypeDemande typeDemande = demande.getTypeDemande();
+
+            model.addAttribute("demande", demande);
+            model.addAttribute("typeDemande", typeDemande);
+            model.addAttribute("typeDemandeId", typeDemandeId);
+            model.addAttribute("selectedTypeVisaId", demande.getTypeVisa() == null ? null : demande.getTypeVisa().getId());
+            model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
+            model.addAttribute("personne", demande.getPasseport() == null ? null : demande.getPasseport().getPersonne());
+            model.addAttribute("passeport", demande.getPasseport());
+            model.addAttribute("visaTransformable",
+                    demande.getPasseport() == null || demande.getPasseport().getPersonne() == null
+                            ? null
+                            : demandeService.getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
+            model.addAttribute("nationalites", nationaliteService.getNationalites());
+            model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
+            model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
+
+            return "modifier-demande";
+        } catch (BusinessValidationException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/demandes";
+        }
     }
 
     @GetMapping("/demande/champs-fournir")
@@ -130,6 +160,60 @@ public class DemandeController {
         } catch (Exception exception) {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur technique lors de la creation de la demande.");
             return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
+        }
+    }
+
+    @PostMapping("/demande/modifier")
+    public String updateDemande(@RequestParam Map<String, String> formValues,
+            @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds,
+            RedirectAttributes redirectAttributes,
+            Model model) {
+        CreateDemandeDTO dto = new CreateDemandeDTO();
+
+        Integer demandeId = parseInteger(formValues.get("demandeId"));
+
+        dto.setNom(formValues.get("nom"));
+        dto.setPrenom(formValues.get("prenom"));
+        dto.setNomJeuneFille(formValues.get("nomJeuneFille"));
+        dto.setEmail(formValues.get("email"));
+        dto.setDateNaissance(parseLocalDate(formValues.get("dateNaissance")));
+        dto.setLieuNaissance(formValues.get("lieuNaissance"));
+        dto.setAdresse(formValues.get("adresse"));
+        dto.setTelephone(formValues.get("telephone"));
+        dto.setNationalite(parseInteger(formValues.get("nationalite")));
+        dto.setSituationFamiliale(parseInteger(formValues.get("situationFamiliale")));
+
+        dto.setNumeroPasseport(formValues.get("numeroPasseport"));
+        dto.setDateExpirationPasseport(parseLocalDate(formValues.get("dateExpirationPasseport")));
+
+        dto.setNumeroVisaTransformable(formValues.get("numeroVisaTransformable"));
+        dto.setDateArrivee(parseLocalDate(formValues.get("dateArrivee")));
+        dto.setDateExpirationVisaTransformable(parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
+
+        dto.setDateDemande(parseLocalDate(formValues.get("dateDemande")));
+        dto.setTypeVisa(parseInteger(formValues.get("typeVisa")));
+        dto.setTypeDemandeId(parseInteger(formValues.get("typeDemandeId")));
+
+        dto.setChampFournirIds(champFournirIds);
+
+        if (demandeId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Identifiant de demande invalide.");
+            return "redirect:/demandes";
+        }
+
+        try {
+            Demande demandeModifiee = demandeService.updateDemande(demandeId, dto);
+            model.addAttribute("demande", demandeModifiee);
+            model.addAttribute("dto", dto);
+            model.addAttribute("statutInitial", "Modifiee");
+            model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
+            return "demande-confirmation";
+        } catch (BusinessValidationException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/demande/modifier?id=" + demandeId;
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur technique lors de la modification de la demande.");
+            return "redirect:/demande/modifier?id=" + demandeId;
         }
     }
     // @PostMapping("/demande/creer")
