@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.visa.service.DemandeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +21,7 @@ import com.visa.entity.Demande;
 import com.visa.entity.TypeDemande;
 import com.visa.exception.BusinessValidationException;
 import com.visa.service.ChampFournirService;
+import com.visa.service.DemandeService;
 import com.visa.service.NationaliteService;
 import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;

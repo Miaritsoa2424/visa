@@ -1,14 +1,14 @@
 package com.visa.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +34,8 @@ import com.visa.repository.PasseportRepository;
 import com.visa.repository.PersonneRepository;
 import com.visa.repository.SituationFamilialeRepository;
 import com.visa.repository.StatutDemandeRepository;
-import com.visa.repository.TypeStatutDemandeRepository;
 import com.visa.repository.TypeDemandeRepository;
+import com.visa.repository.TypeStatutDemandeRepository;
 import com.visa.repository.TypeVisaRepository;
 import com.visa.repository.VisaTransformableRepository;
 
