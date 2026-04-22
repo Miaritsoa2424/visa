@@ -1,0 +1,134 @@
+<style>
+    .app-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 280px;
+        background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%);
+        border-right: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 14px 0 30px rgba(15, 23, 42, 0.25);
+        color: #e5e7eb;
+        padding: 22px 16px;
+        z-index: 1000;
+        overflow-y: auto;
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        margin-bottom: 18px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar-brand .brand-badge {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        box-shadow: 0 6px 14px rgba(249, 115, 22, 0.4);
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sidebar-link,
+    .sidebar-summary,
+    .sidebar-submenu a {
+        text-decoration: none;
+        color: #e5e7eb;
+        font-size: 14px;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-summary:hover,
+    .sidebar-submenu a:hover {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+    }
+
+    .sidebar-dropdown {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.24);
+        overflow: hidden;
+    }
+
+    .sidebar-summary {
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .sidebar-summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .sidebar-submenu {
+        margin: 0;
+        padding: 2px 8px 8px;
+        list-style: none;
+    }
+
+    .sidebar-submenu a {
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .app-main {
+        margin-left: 280px;
+        min-height: 100vh;
+    }
+
+    @media (max-width: 900px) {
+        .app-sidebar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            inset: auto;
+            border-right: none;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+        }
+
+        .app-main {
+            margin-left: 0;
+        }
+    }
+</style>
+
+<aside class="app-sidebar" aria-label="Navigation principale">
+    <a class="sidebar-brand" href="/home">
+        <span class="brand-badge">&#9992;</span>
+        <span>VisaTrack Madagascar</span>
+    </a>
+
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="/home"><span>&#8962;</span> Accueil</a>
+
+        <details class="sidebar-dropdown" open>
+            <summary class="sidebar-summary"><span>&#128221;</span> Demandes <span style="margin-left:auto;">&#9662;</span></summary>
+            <ul class="sidebar-submenu">
+                <li><a href="/demandes">&#128203; Liste (/demandes)</a></li>
+                <li><a href="/home">&#10133; Creation (/home)</a></li>
+            </ul>
+        </details>
+    </nav>
+</aside>

@@ -19,7 +19,9 @@ import com.visa.entity.Nationalite;
 import com.visa.entity.Passeport;
 import com.visa.entity.Personne;
 import com.visa.entity.SituationFamiliale;
+import com.visa.entity.StatutDemande;
 import com.visa.entity.TypeDemande;
+import com.visa.entity.TypeStatutDemande;
 import com.visa.entity.TypeVisa;
 import com.visa.entity.VisaTransformable;
 import com.visa.exception.BusinessValidationException;
@@ -30,6 +32,8 @@ import com.visa.repository.NationaliteRepository;
 import com.visa.repository.PasseportRepository;
 import com.visa.repository.PersonneRepository;
 import com.visa.repository.SituationFamilialeRepository;
+import com.visa.repository.StatutDemandeRepository;
+import com.visa.repository.TypeStatutDemandeRepository;
 import com.visa.repository.TypeDemandeRepository;
 import com.visa.repository.TypeVisaRepository;
 import com.visa.repository.VisaTransformableRepository;
@@ -51,9 +55,13 @@ public class DemandeService {
     @Autowired
     private SituationFamilialeRepository situationFamilialeRepository;
     @Autowired
+    private StatutDemandeRepository statutDemandeRepository;
+    @Autowired
     private TypeVisaRepository typeVisaRepository;
     @Autowired
     private TypeDemandeRepository typeDemandeRepository;
+    @Autowired
+    private TypeStatutDemandeRepository typeStatutDemandeRepository;
     @Autowired
     private ChampFournirRepository champFournirRepository;
 
@@ -86,6 +94,8 @@ public class DemandeService {
             demande.setTypeVisa(typeVisa);
             demande.setTypeDemande(typeDemande);
             demande = demandeRepository.save(demande);
+
+            createInitialStatutDemande(demande);
 
             saveDossierProfessionnels(dto, demande);
 
@@ -251,6 +261,17 @@ public class DemandeService {
             dossier.setValeur(String.valueOf(champFournirSelectedIds.contains(champFournir.getId())));
             dossierProfessionnelRepository.save(dossier);
         }
+    }
+
+    private void createInitialStatutDemande(Demande demande) {
+        TypeStatutDemande typeStatutDemande = typeStatutDemandeRepository.findById("1")
+                .orElseThrow(() -> new BusinessValidationException("Type de statut de demande 'Cree' non trouve."));
+
+        StatutDemande statutDemande = new StatutDemande();
+        statutDemande.setDateStatut(demande.getDateDemande());
+        statutDemande.setTypeStatutDemande(typeStatutDemande);
+        statutDemande.setDemande(demande);
+        statutDemandeRepository.save(statutDemande);
     }
 
 }

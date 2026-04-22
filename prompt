@@ -55,3 +55,9 @@ donc les champs_fournir pour le type de visa demande seront tous dans dossier_pr
 
 =============================================== FIXXXXXX ===============================
 en plus d'inserer dans la table demande il faut aussi inserer dans la table statut_demande, toutes les demandes auront un statut cree au tout debut
+====================================
+maintenant il me faut une barre de navigation dans mon projet:
+- section accueil qui me redirigera vers une page d'accueil cool... quand l'utilisateur va dans / il devrait etre rediriger la bas
+- section demande sera un dropdown: liste(/demandes) et creation(/home)
+Note: ajoute des icones et ajoute aussi un nom pour l'application
+le navbar devrait etre visible dans toutes les pages ou l'utilisateur ira

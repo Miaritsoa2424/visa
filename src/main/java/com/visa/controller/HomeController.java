@@ -13,7 +13,12 @@ public class HomeController {
     @Autowired
     private TypeDemandeService typeDemandeService;
 
-    @GetMapping({"/", "/home"})
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/home";
+    }
+
+    @GetMapping("/home")
     public String home(Model model) {
         model.addAttribute("typesDemande", typeDemandeService.getTypesDemande());
         return "index";

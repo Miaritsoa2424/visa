@@ -87,9 +87,10 @@ public class DemandeController {
 
 
     @PostMapping("/demande/creer")
-    public String createDemande(@RequestParam Map<String, String> formValues,
+        public String createDemande(@RequestParam Map<String, String> formValues,
             @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            Model model) {
         CreateDemandeDTO dto = new CreateDemandeDTO();
 
         dto.setNom(formValues.get("nom"));
@@ -117,9 +118,12 @@ public class DemandeController {
         dto.setChampFournirIds(champFournirIds);
 
         try {
-            demandeService.createDemande(dto);
-            redirectAttributes.addFlashAttribute("succesMessage", "Demande creee avec succes.");
-            return "redirect:/demandes";
+            var demandeCreee = demandeService.createDemande(dto);
+            model.addAttribute("demande", demandeCreee);
+            model.addAttribute("dto", dto);
+            model.addAttribute("statutInitial", "Cree");
+            model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
+            return "demande-confirmation";
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
