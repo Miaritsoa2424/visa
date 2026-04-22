@@ -318,6 +318,8 @@
     </style>
 </head>
 <body>
+<%@ include file="/WEB-INF/jsp/fragments/navbar.jspf" %>
+<main class="app-main">
 <div class="page">
     <div class="header">
         <h1>Nouvelle demande</h1>
@@ -486,6 +488,7 @@
         </form>
     </div>
 </div>
+</main>
 <script>
     (function () {
         const typeVisaSelect = document.getElementById("typeVisa");

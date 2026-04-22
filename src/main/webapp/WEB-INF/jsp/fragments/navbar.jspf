@@ -1,0 +1,253 @@
+<style>
+    .app-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 280px;
+        background: linear-gradient(180deg, #334155 0%, #475569 100%);
+        border-right: 1px solid rgba(148, 163, 184, 0.35);
+        box-shadow: 10px 0 26px rgba(51, 65, 85, 0.22);
+        color: #e2e8f0;
+        padding: 22px 16px;
+        z-index: 1000;
+        overflow-y: auto;
+    }
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: #f8fafc;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        margin-bottom: 18px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: rgba(241, 245, 249, 0.12);
+        flex: 1;
+    }
+
+    .sidebar-brand .brand-badge {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        box-shadow: 0 6px 14px rgba(249, 115, 22, 0.4);
+    }
+
+    .sidebar-toggle {
+        border: 1px solid rgba(241, 245, 249, 0.35);
+        background: rgba(241, 245, 249, 0.16);
+        color: #fff;
+        border-radius: 10px;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar-toggle:hover {
+        background: rgba(241, 245, 249, 0.28);
+    }
+
+    .sidebar-icon {
+        width: 18px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .sidebar-label {
+        white-space: nowrap;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .sidebar-link,
+    .sidebar-summary,
+    .sidebar-submenu a {
+        text-decoration: none;
+        color: #f1f5f9;
+        font-size: 14px;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-summary:hover,
+    .sidebar-submenu a:hover {
+        background: rgba(241, 245, 249, 0.16);
+        color: #fff;
+    }
+
+    .sidebar-dropdown {
+        border: 1px solid rgba(226, 232, 240, 0.26);
+        border-radius: 12px;
+        background: rgba(51, 65, 85, 0.36);
+        overflow: hidden;
+    }
+
+    .sidebar-summary {
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .sidebar-summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .sidebar-submenu {
+        margin: 0;
+        padding: 2px 8px 8px;
+        list-style: none;
+    }
+
+    .sidebar-submenu a {
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .app-main {
+        margin-left: 280px;
+        min-height: 100vh;
+    }
+
+    body.sidebar-collapsed .app-sidebar {
+        width: 92px;
+        padding: 20px 10px;
+    }
+
+    body.sidebar-collapsed .app-main {
+        margin-left: 92px;
+    }
+
+    body.sidebar-collapsed .sidebar-label,
+    body.sidebar-collapsed .sidebar-summary .chevron,
+    body.sidebar-collapsed .sidebar-submenu {
+        display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-header {
+        justify-content: center;
+    }
+
+    body.sidebar-collapsed .sidebar-toggle {
+        margin-bottom: 10px;
+    }
+
+    body.sidebar-collapsed .sidebar-brand,
+    body.sidebar-collapsed .sidebar-link,
+    body.sidebar-collapsed .sidebar-summary {
+        justify-content: center;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    body.sidebar-collapsed .sidebar-dropdown {
+        border-color: transparent;
+        background: transparent;
+    }
+
+    @media (max-width: 900px) {
+        .app-sidebar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            inset: auto;
+            border-right: none;
+            box-shadow: 0 10px 24px rgba(51, 65, 85, 0.22);
+        }
+
+        .app-main {
+            margin-left: 0;
+        }
+
+        .sidebar-toggle {
+            display: none;
+        }
+
+        body.sidebar-collapsed .app-sidebar,
+        body.sidebar-collapsed .app-main {
+            width: auto;
+            margin-left: 0;
+        }
+
+        body.sidebar-collapsed .sidebar-label,
+        body.sidebar-collapsed .sidebar-summary .chevron,
+        body.sidebar-collapsed .sidebar-submenu {
+            display: initial;
+        }
+    }
+</style>
+
+<aside class="app-sidebar" aria-label="Navigation principale">
+    <div class="sidebar-header">
+        <a class="sidebar-brand" href="/home">
+            <span class="brand-badge">&#9992;</span>
+            <span class="sidebar-label">VisaTrack Madagascar</span>
+        </a>
+        <button id="sidebarToggle" class="sidebar-toggle" type="button" title="Reduire ou etendre le menu" aria-label="Reduire ou etendre le menu" aria-expanded="true">&#10094;&#10094;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a class="sidebar-link" href="/home"><span class="sidebar-icon">&#8962;</span> <span class="sidebar-label">Accueil</span></a>
+
+        <details class="sidebar-dropdown" open>
+            <summary class="sidebar-summary"><span class="sidebar-icon">&#128221;</span> <span class="sidebar-label">Demandes</span> <span class="chevron" style="margin-left:auto;">&#9662;</span></summary>
+            <ul class="sidebar-submenu">
+                <li><a href="/demandes"><span class="sidebar-icon">&#128203;</span> <span class="sidebar-label">Liste (/demandes)</span></a></li>
+                <li><a href="/home"><span class="sidebar-icon">&#10133;</span> <span class="sidebar-label">Creation (/home)</span></a></li>
+            </ul>
+        </details>
+    </nav>
+</aside>
+
+<script>
+    (function () {
+        var toggleButton = document.getElementById("sidebarToggle");
+        if (!toggleButton) {
+            return;
+        }
+
+        var storageKey = "visa.sidebar.collapsed";
+
+        function applyCollapsedState(isCollapsed) {
+            document.body.classList.toggle("sidebar-collapsed", isCollapsed);
+            toggleButton.setAttribute("aria-expanded", String(!isCollapsed));
+            toggleButton.innerHTML = isCollapsed ? "&#9776;" : "&#10094;&#10094;";
+        }
+
+        var storedState = localStorage.getItem(storageKey) === "1";
+        applyCollapsedState(storedState);
+
+        toggleButton.addEventListener("click", function () {
+            var shouldCollapse = !document.body.classList.contains("sidebar-collapsed");
+            applyCollapsedState(shouldCollapse);
+            localStorage.setItem(storageKey, shouldCollapse ? "1" : "0");
+        });
+    })();
+</script>

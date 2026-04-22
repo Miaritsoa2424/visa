@@ -9,13 +9,14 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 900px;
-            margin: 50px auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #f4f4f4;
         }
 
         .container {
+            max-width: 900px;
+            margin: 50px auto;
             background-color: white;
             padding: 30px;
             border-radius: 8px;
@@ -100,6 +101,8 @@
     </style>
 </head>
 <body>
+<%@ include file="/WEB-INF/jsp/fragments/navbar.jspf" %>
+<main class="app-main">
 <div class="container">
     <h1>Bienvenue</h1>
     <p>Choisissez le type de demande que vous voulez faire.</p>
@@ -123,5 +126,6 @@
         </c:otherwise>
     </c:choose>
 </div>
+</main>
 </body>
 </html>
