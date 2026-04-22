@@ -2,6 +2,8 @@ package com.visa.entity;
 
 import java.time.LocalDate;
 
+import com.visa.exception.BusinessValidationException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -83,7 +85,10 @@ public class Personne {
     }
 
     public void setNom(String nom) {
-        this.nom = nom;
+        if (nom == null || nom.isBlank()) {
+            throw new BusinessValidationException("Le champ nom est obligatoire.");
+        }
+        this.nom = nom.trim();
     }
 
     public String getPrenom() {
@@ -115,6 +120,12 @@ public class Personne {
     }
 
     public void setDateNaissance(LocalDate dateNaissance) {
+        if (dateNaissance == null) {
+            throw new BusinessValidationException("Le champ date de naissance est obligatoire.");
+        }
+        if (!dateNaissance.isBefore(LocalDate.now())) {
+            throw new BusinessValidationException("La date de naissance doit etre dans le passe.");
+        }
         this.dateNaissance = dateNaissance;
     }
 
@@ -131,7 +142,10 @@ public class Personne {
     }
 
     public void setAdresse(String adresse) {
-        this.adresse = adresse;
+        if (adresse == null || adresse.isBlank()) {
+            throw new BusinessValidationException("Le champ adresse est obligatoire.");
+        }
+        this.adresse = adresse.trim();
     }
 
     public String getTelephone() {
@@ -147,6 +161,9 @@ public class Personne {
     }
 
     public void setNationalite(Nationalite nationalite) {
+        if (nationalite == null) {
+            throw new BusinessValidationException("Le champ nationalite est obligatoire.");
+        }
         this.nationalite = nationalite;
     }
 
