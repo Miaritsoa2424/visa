@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,6 +92,8 @@ public class DemandeService {
             return demande;
         } catch (BusinessValidationException exception) {
             throw exception;
+        } catch (IncorrectResultSizeDataAccessException exception) {
+            throw new BusinessValidationException("Plusieurs enregistrements identiques existent deja en base pour cette valeur. Merci de contacter l'administration pour nettoyer les doublons.");
         } catch (DataIntegrityViolationException exception) {
             throw new BusinessValidationException("Violation de contrainte en base de donnees: " + exception.getMostSpecificCause().getMessage());
         } catch (RuntimeException exception) {
@@ -152,7 +155,7 @@ public class DemandeService {
         Personne existingPersonne = null;
 
         if (email != null) {
-            existingPersonne = personneRepository.findByEmail(email).orElse(null);
+            existingPersonne = personneRepository.findFirstByEmailOrderByIdAsc(email).orElse(null);
         }
 
         if (existingPersonne == null) {
@@ -176,7 +179,7 @@ public class DemandeService {
 
     private Passeport findOrCreatePasseport(CreateDemandeDTO dto, Personne personne) {
         String numeroPasseport = normalize(dto.getNumeroPasseport());
-        Passeport passeport = passeportRepository.findByNumero(numeroPasseport).orElse(new Passeport());
+        Passeport passeport = passeportRepository.findFirstByNumeroOrderByIdAsc(numeroPasseport).orElse(new Passeport());
 
         if (passeport.getId() != null && passeport.getPersonne() != null && passeport.getPersonne().getId() != null
                 && !Objects.equals(passeport.getPersonne().getId(), personne.getId())) {
@@ -191,7 +194,7 @@ public class DemandeService {
 
     private VisaTransformable findOrCreateVisaTransformableIfProvided(CreateDemandeDTO dto, Personne personne) {
         String numeroVisaTransformable = normalize(dto.getNumeroVisaTransformable());
-        VisaTransformable visaTransformable = visaTransformableRepository.findByNumero(numeroVisaTransformable)
+        VisaTransformable visaTransformable = visaTransformableRepository.findFirstByNumeroOrderByIdAsc(numeroVisaTransformable)
                 .orElse(new VisaTransformable());
 
         if (visaTransformable.getId() != null && visaTransformable.getPersonne() != null && visaTransformable.getPersonne().getId() != null

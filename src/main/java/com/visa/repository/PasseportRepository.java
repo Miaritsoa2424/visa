@@ -9,5 +9,5 @@ import com.visa.entity.Passeport;
 
 @Repository
 public interface PasseportRepository extends JpaRepository<Passeport, Integer> {
-    Optional<Passeport> findByNumero(String numero);
+    Optional<Passeport> findFirstByNumeroOrderByIdAsc(String numero);
 }

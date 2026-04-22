@@ -9,5 +9,5 @@ import com.visa.entity.Personne;
 
 @Repository
 public interface PersonneRepository extends JpaRepository<Personne, Integer> {
-    Optional<Personne> findByEmail(String email);
+    Optional<Personne> findFirstByEmailOrderByIdAsc(String email);
 }
