@@ -61,3 +61,9 @@ maintenant il me faut une barre de navigation dans mon projet:
 - section demande sera un dropdown: liste(/demandes) et creation(/home)
 Note: ajoute des icones et ajoute aussi un nom pour l'application
 le navbar devrait etre visible dans toutes les pages ou l'utilisateur ira
+
+===============================
+j'aime bien le css de la liste et la couleur aussi je veux utiliser la meme couleur pour mon site tout entier
+
+
+maintenant encore sur la facon de coder l'application j'aime pas la facon dont tu integres le sidebar aux pages un par un mais je veux que le sidebar contiennent l'en tete et les import de css et tout, et les contenus seront includer (et le nom de la page jsp (contenu) sera envoye par le controller), d'abord dis moi comment tu comptes proceder et donne moi les codes avant de toucher a mon code actuel
