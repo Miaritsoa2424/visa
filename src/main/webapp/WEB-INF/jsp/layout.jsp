@@ -46,7 +46,7 @@
 
 <main class="app-main">
     <c:if test="${not empty contentPage}">
-        <jsp:include page="/WEB-INF/jsp/${contentPage}.jsp" />
+        <jsp:include page="${contentPage}" />
     </c:if>
 
     <c:if test="${empty contentPage}">

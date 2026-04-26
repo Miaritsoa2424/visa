@@ -54,7 +54,29 @@ public class DemandeController {
 
         model.addAttribute("demandes", demandes);
         model.addAttribute("canEditByDemandeId", canEditByDemandeId);
-        return "demandes";
+        return renderPage(model, "Liste des demandes", "/WEB-INF/jsp/demande/demandes.jsp", "demandes");
+    }
+
+    @GetMapping("/demande/fiche")
+    public String ficheDemande(@RequestParam("id") Integer demandeId, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Demande demande = demandeService.getDemandeById(demandeId);
+
+            model.addAttribute("demande", demande);
+            model.addAttribute("personne", demande.getPasseport() == null ? null : demande.getPasseport().getPersonne());
+            model.addAttribute("passeport", demande.getPasseport());
+            model.addAttribute("visaTransformable",
+                    demande.getPasseport() == null || demande.getPasseport().getPersonne() == null
+                            ? null
+                            : demandeService.getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
+            model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
+            model.addAttribute("canEdit", demandeService.canEditDemandeByTypeStatutDemande(demandeId));
+
+            return renderPage(model, "Fiche demande", "/WEB-INF/jsp/demande/demande-fiche.jsp", "demande-confirmation");
+        } catch (BusinessValidationException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/demandes";
+        }
     }
 
     @GetMapping("/demande/nouvelle")
@@ -74,7 +96,7 @@ public class DemandeController {
         model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
         model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
         
-        return "nouvelle-demande";
+        return renderPage(model, "Nouvelle demande", "/WEB-INF/jsp/demande/nouvelle-demande.jsp", "demande-form");
     }
 
     @GetMapping("/demande/modifier")
@@ -104,7 +126,7 @@ public class DemandeController {
             model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
             model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
 
-            return "modifier-demande";
+            return renderPage(model, "Modifier demande", "/WEB-INF/jsp/demande/modifier-demande.jsp", "demande-form");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demandes";
@@ -166,7 +188,7 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Cree");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return "demande-confirmation";
+            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp", "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
@@ -225,7 +247,7 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Modifiee");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return "demande-confirmation";
+            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp", "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/modifier?id=" + demandeId;
@@ -233,6 +255,13 @@ public class DemandeController {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur technique lors de la modification de la demande.");
             return "redirect:/demande/modifier?id=" + demandeId;
         }
+    }
+
+    private String renderPage(Model model, String pageTitle, String contentPage, String pageStyle) {
+        model.addAttribute("pageTitle", pageTitle);
+        model.addAttribute("contentPage", contentPage);
+        model.addAttribute("pageStyle", pageStyle);
+        return "layout";
     }
 
 }
