@@ -139,6 +139,66 @@ summary::-webkit-details-marker {
     background: #fff;
 }
 
+.civil-card {
+    border: 1px solid #d3e2f3;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f8fbff 0%, #fdfefe 100%);
+    padding: 18px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.civil-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.civil-item {
+    grid-column: span 6;
+    border: 1px solid #e2ecf7;
+    border-radius: 12px;
+    background: #fff;
+    padding: 12px 14px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.civil-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.08);
+}
+
+.civil-item-full {
+    grid-column: span 12;
+}
+
+.civil-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.civil-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.civil-empty {
+    border: 1px dashed #b8cce3;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f8fbff 0%, #fcfdff 100%);
+    padding: 16px;
+    color: #53657d;
+    font-size: 14px;
+}
+
 .section-grid {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -293,6 +353,10 @@ textarea:focus {
 }
 
 @media (max-width: 900px) {
+    .civil-item {
+        grid-column: span 12;
+    }
+
     .field.col-6,
     .field.col-4 {
         grid-column: span 12;
