@@ -37,6 +37,47 @@
 3. Deadline : 21/04/2026 12:00 
 
 
+# Sprint 2
+
+### Description :
+  Transfert/Duplicata de visa sans donnees anterieures disponibles.
+  Cas exceptionnel: on simule d'abord une personne source (Personne 1) avec creation complete + visa deja valide,
+  puis on permet a une personne cible (Personne 2) de faire la demande de transfert.
+
+### Regles metier visees :
+1. Personne 1 remplit un formulaire similaire a Premiere demande directement valide et visa cree
+2. Personne 2 fait une demande de transfert/duplicata liee au visa de Personne 1.
+
+### Repartition :
+#### Elyance
+1. Branche : sprint2/1/source-visa
+2. Taches:
+	- [ ] Ajouter les types et references necessaires pour Sprint 2 (type_demande/type_statuts si besoin)
+	- [ ] Ajouter page formulaire (meme structure que Premiere demande)
+		- [ ] Creation automatique statut_demande = "Visa validee"
+		- [ ] Creation automatique visa + statut_visa = "Actif"
+	- [ ] Ajouter validations metier pour creation directe (champs obligatoires + coherence dates)
+
+#### Miaritsoa 
+1. Branche : sprint2/2/transfert-visa
+2. Taches:
+	- [ ] Definir le workflow transfert Personne 2 :
+		- [ ] Selection/recherche du visa source (numero visa ou numero passeport source)
+		- [ ] Verification visa source existant et pas expire, annule, ...
+		- [ ] nouveau passeport
+		- [ ] Lien entre visa source et nouvelle demande de transfert
+		
+	- [ ] Creer DTO + controller pour la demande de transfert
+	- [ ] Creer service transfertVisa dans DemandeService (ou service dedie)
+	- [ ] insertion nouveau ligne visa
+	- [ ] Inserer historique de transfert
+	- [ ] Ajouter donnees de test pour scenario complet Personne 1 -> Personne 2
+	- [ ] Tester les cas limites:
+		- [ ] visa source introuvable
+		- [ ] visa source non transferables (expire, annule, etc.)
+
+
+
  
  
  

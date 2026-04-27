@@ -40,6 +40,9 @@ public class DemandeController {
     private PersonneRepository personneRepository;
     @Autowired
     private VisaRepository visaRepository;
+
+    private static final Integer TRANSFERT_TYPE_DEMANDE_ID = 4;
+
     @Autowired
     private DemandeService demandeService;
     @Autowired
@@ -67,7 +70,7 @@ public class DemandeController {
 
         model.addAttribute("demandes", demandes);
         model.addAttribute("canEditByDemandeId", canEditByDemandeId);
-        return renderPage(model, "Liste des demandes", "/WEB-INF/jsp/demande/demandes.jsp", "demandes");
+        return renderPage(model, "Liste des demandes", "demande/demandes.jsp", "demandes");
     }
 
     @GetMapping("/demande/fiche")
@@ -88,7 +91,7 @@ public class DemandeController {
             model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
             model.addAttribute("canEdit", demandeService.canEditDemandeByTypeStatutDemande(demandeId));
 
-            return renderPage(model, "Fiche demande", "/WEB-INF/jsp/demande/demande-fiche.jsp", "demande-confirmation");
+            return renderPage(model, "Fiche demande", "demande/demande-fiche.jsp", "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demandes";
@@ -105,14 +108,86 @@ public class DemandeController {
 
         TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
 
+        if (isTransfertType(typeDemande)) {
+            return "redirect:/demande/check-numero-visa?typeDemandeId=" + typeDemandeId;
+        }
+        
         // Charger les listes via le service
         model.addAttribute("typeDemande", typeDemande);
         model.addAttribute("typeDemandeId", typeDemandeId);
         model.addAttribute("nationalites", nationaliteService.getNationalites());
         model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
         model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
+        
+        return renderPage(model, "Nouvelle demande", "demande/nouvelle-demande.jsp", "demande-form");
+    }
 
-        return renderPage(model, "Nouvelle demande", "/WEB-INF/jsp/demande/nouvelle-demande.jsp", "demande-form");
+    @GetMapping("/demande/check-numero-visa")
+    public String checkNumeroVisaPage(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
+            Model model) {
+        Integer typeDemandeId = UtilService.parseTypeDemandeId(typeDemandeIdParam);
+        if (typeDemandeId == null) {
+            return "redirect:/home";
+        }
+
+        TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
+        if (!isTransfertType(typeDemande)) {
+            return "redirect:/demande/nouvelle?typeDemandeId=" + typeDemandeId;
+        }
+
+        model.addAttribute("typeDemande", typeDemande);
+        model.addAttribute("typeDemandeId", typeDemandeId);
+        model.addAttribute("visaVerificationDone", false);
+        return renderPage(model, "Verification du visa source", "demande/check-numero-visa.jsp", "demande-form");
+    }
+
+    @PostMapping("/demande/check-numero-visa")
+    public String checkNumeroVisa(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
+            @RequestParam(value = "numeroVisa", required = false) String numeroVisa,
+            Model model) {
+        Integer typeDemandeId = UtilService.parseTypeDemandeId(typeDemandeIdParam);
+        if (typeDemandeId == null) {
+            return "redirect:/home";
+        }
+
+        TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
+        if (!isTransfertType(typeDemande)) {
+            return "redirect:/demande/nouvelle?typeDemandeId=" + typeDemandeId;
+        }
+
+        boolean visaExiste = demandeService.visaExistsByNumero(numeroVisa);
+        model.addAttribute("typeDemande", typeDemande);
+        model.addAttribute("typeDemandeId", typeDemandeId);
+        model.addAttribute("numeroVisa", numeroVisa);
+        model.addAttribute("visaVerificationDone", true);
+        model.addAttribute("visaExiste", visaExiste);
+        model.addAttribute("verificationMessage",
+                visaExiste
+                        ? "Oui, le visa existe dans la base de donnees."
+                        : "Non, le visa n'existe pas dans la base de donnees.");
+        model.addAttribute("redirectUrl", visaExiste
+                ? "/demande/transfert-form-avec-donnee?typeDemandeId=" + typeDemandeId
+                : "/demande/transfert-form-sans-donnee?typeDemandeId=" + typeDemandeId);
+
+        return renderPage(model, "Verification du visa source", "demande/check-numero-visa.jsp", "demande-form");
+    }
+
+    @GetMapping("/demande/transfert-form-avec-donnee")
+    public String transfertFormWithData(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
+            Model model) {
+        return renderTransferPlaceholderPage(typeDemandeIdParam, model,
+                "Formulaire de transfert avec donnees",
+                "La page de redirection vers le formulaire de transfert avec donnees est disponible. Le formulaire complet sera ajoute plus tard.",
+                "demande/transfert-form-avec-donnee.jsp");
+    }
+
+    @GetMapping("/demande/transfert-form-sans-donnee")
+    public String transfertFormWithoutData(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
+            Model model) {
+        return renderTransferPlaceholderPage(typeDemandeIdParam, model,
+                "Formulaire de transfert sans donnees",
+                "La page de redirection vers le formulaire de transfert sans donnees est disponible. Le formulaire complet sera ajoute plus tard.",
+                "demande/transfert-form-sans-donnee.jsp");
     }
 
     @GetMapping("/transfert/withData")
@@ -201,7 +276,7 @@ public class DemandeController {
             model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
             model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
 
-            return renderPage(model, "Modifier demande", "/WEB-INF/jsp/demande/modifier-demande.jsp", "demande-form");
+            return renderPage(model, "Modifier demande", "demande/modifier-demande.jsp", "demande-form");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demandes";
@@ -263,8 +338,7 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Cree");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp",
-                    "demande-confirmation");
+            return renderPage(model, "Demande confirmee", "demande/demande-confirmation.jsp", "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/nouvelle?typeDemandeId="
@@ -327,8 +401,7 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Modifiee");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp",
-                    "demande-confirmation");
+            return renderPage(model, "Demande confirmee", "demande/demande-confirmation.jsp", "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/modifier?id=" + demandeId;
@@ -344,6 +417,29 @@ public class DemandeController {
         model.addAttribute("contentPage", contentPage);
         model.addAttribute("pageStyle", pageStyle);
         return "layout";
+    }
+
+    private String renderTransferPlaceholderPage(String typeDemandeIdParam, Model model, String pageTitle,
+            String description, String contentPage) {
+        Integer typeDemandeId = UtilService.parseTypeDemandeId(typeDemandeIdParam);
+        if (typeDemandeId == null) {
+            return "redirect:/home";
+        }
+
+        TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
+        if (!isTransfertType(typeDemande)) {
+            return "redirect:/demande/nouvelle?typeDemandeId=" + typeDemandeId;
+        }
+
+        model.addAttribute("typeDemande", typeDemande);
+        model.addAttribute("typeDemandeId", typeDemandeId);
+        model.addAttribute("description", description);
+        return renderPage(model, pageTitle, contentPage, "demande-form");
+    }
+
+    private boolean isTransfertType(TypeDemande typeDemande) {
+        return typeDemande != null
+                && TRANSFERT_TYPE_DEMANDE_ID.equals(typeDemande.getId());
     }
 
 }

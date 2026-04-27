@@ -109,6 +109,15 @@ public class DemandeService {
         return "1".equals(statutDemande.getTypeStatutDemande().getId());
     }
 
+    public boolean visaExistsByNumero(String numeroVisa) {
+        String numeroNormalise = normalize(numeroVisa);
+        if (numeroNormalise == null) {
+            return false;
+        }
+
+        return visaRepository.findFirstByNumeroOrderByIdAsc(numeroNormalise).isPresent();
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public Demande createDemande(CreateDemandeDTO dto) {
         try {

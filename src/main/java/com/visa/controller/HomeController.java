@@ -21,7 +21,7 @@ public class HomeController {
     @GetMapping("/home")
     public String home(Model model) {
         model.addAttribute("typesDemande", typeDemandeService.getTypesDemande());
-        return renderPage(model, "Visa - Bienvenue", "/WEB-INF/jsp/index.jsp", "index");
+        return renderPage(model, "Visa - Bienvenue", "index.jsp", "index");
     }
 
     private String renderPage(Model model, String pageTitle, String contentPage, String pageStyle) {

@@ -13,5 +13,6 @@ import com.visa.entity.Visa;
 public interface VisaRepository extends JpaRepository<Visa, Integer> {
     Optional<Visa> findFirstByPersonneIdOrderByIdDesc(Integer personneId);
     Optional<Visa> findFirstByNumero(String numero);
+    Optional<Visa> findFirstByNumeroOrderByIdAsc(String numero);
 
 }
