@@ -37,6 +37,7 @@ import com.visa.repository.StatutDemandeRepository;
 import com.visa.repository.TypeDemandeRepository;
 import com.visa.repository.TypeStatutDemandeRepository;
 import com.visa.repository.TypeVisaRepository;
+import com.visa.repository.VisaRepository;
 import com.visa.repository.VisaTransformableRepository;
 
 @Service
@@ -65,6 +66,8 @@ public class DemandeService {
     private TypeStatutDemandeRepository typeStatutDemandeRepository;
     @Autowired
     private ChampFournirRepository champFournirRepository;
+    @Autowired
+    private VisaRepository visaRepository;
 
     public List<Demande> getDemandes(){
         return demandeRepository.findAll();
@@ -95,6 +98,15 @@ public class DemandeService {
         }
 
         return "1".equals(statutDemande.getTypeStatutDemande().getId());
+    }
+
+    public boolean visaExistsByNumero(String numeroVisa) {
+        String numeroNormalise = normalize(numeroVisa);
+        if (numeroNormalise == null) {
+            return false;
+        }
+
+        return visaRepository.findFirstByNumeroOrderByIdAsc(numeroNormalise).isPresent();
     }
 
     @Transactional(rollbackFor = Exception.class)
