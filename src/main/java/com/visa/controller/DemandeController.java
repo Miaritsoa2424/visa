@@ -5,6 +5,7 @@ import com.visa.entity.Visa;
 import com.visa.repository.PersonneRepository;
 import com.visa.repository.VisaRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -125,6 +126,24 @@ public class DemandeController {
         model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
         
         return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp", "demande-form");
+    }
+
+    @PostMapping("/transfert/execute")
+    public String executeTransfert(@RequestParam Map<String, String> formValues, Model model) {
+        
+        String visaNumero = formValues.get("numeroVisa");
+        String numeroPasseport = formValues.get("numeroPasseport");
+        LocalDate dateExpiration = UtilService.parseLocalDate(formValues.get("dateExpirationPasseport"));
+
+        ///Demande
+        Demande demande = new Demande();
+        demande.setDateDemande(LocalDate.now());
+        demande.setTypeDemande(typeDemandeService.getById(1)); // Forcer le type de demande à 1 pour le transfert de visa
+
+        demandeService.tranfererVisa(visaNumero, numeroPasseport, dateExpiration, demande);
+
+        return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp", "demande-form");
+
     }
     
 

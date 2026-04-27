@@ -2,6 +2,8 @@ package com.visa.entity;
 
 import java.time.LocalDate;
 
+import com.visa.exception.BusinessValidationException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -83,5 +85,20 @@ public class Demande {
 
     public void setTypeDemande(TypeDemande typeDemande) {
         this.typeDemande = typeDemande;
+    }
+
+    public void validateRequiredFields() {
+        if (dateDemande == null) {
+            throw new BusinessValidationException("La date de la demande est obligatoire.");
+        }
+        if (passeport == null) {
+            throw new BusinessValidationException("Le passeport est obligatoire.");
+        }
+        // if (typeVisa == null) {
+        //     throw new BusinessValidationException("Le type de visa est obligatoire.");
+        // }
+        if (typeDemande == null) {
+            throw new BusinessValidationException("Le type de demande est obligatoire.");
+        }
     }
 }

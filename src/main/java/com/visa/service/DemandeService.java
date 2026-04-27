@@ -1,5 +1,7 @@
 package com.visa.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +18,7 @@ import com.visa.dto.CreateDemandeDTO;
 import com.visa.entity.ChampFournir;
 import com.visa.entity.Demande;
 import com.visa.entity.DossierProfessionnel;
+import com.visa.entity.HistoriquePasseportVisa;
 import com.visa.entity.Nationalite;
 import com.visa.entity.Passeport;
 import com.visa.entity.Personne;
@@ -24,11 +27,13 @@ import com.visa.entity.StatutDemande;
 import com.visa.entity.TypeDemande;
 import com.visa.entity.TypeStatutDemande;
 import com.visa.entity.TypeVisa;
+import com.visa.entity.Visa;
 import com.visa.entity.VisaTransformable;
 import com.visa.exception.BusinessValidationException;
 import com.visa.repository.ChampFournirRepository;
 import com.visa.repository.DemandeRepository;
 import com.visa.repository.DossierProfessionnelRepository;
+import com.visa.repository.HistoriquePasseportVisaRepository;
 import com.visa.repository.NationaliteRepository;
 import com.visa.repository.PasseportRepository;
 import com.visa.repository.PersonneRepository;
@@ -37,6 +42,7 @@ import com.visa.repository.StatutDemandeRepository;
 import com.visa.repository.TypeDemandeRepository;
 import com.visa.repository.TypeStatutDemandeRepository;
 import com.visa.repository.TypeVisaRepository;
+import com.visa.repository.VisaRepository;
 import com.visa.repository.VisaTransformableRepository;
 
 @Service
@@ -65,6 +71,12 @@ public class DemandeService {
     private TypeStatutDemandeRepository typeStatutDemandeRepository;
     @Autowired
     private ChampFournirRepository champFournirRepository;
+    @Autowired
+    private PasseportService passeportService;
+    @Autowired
+    private HistoriquePasseportVisaRepository historiquePasseportVisaRepository;
+    @Autowired
+    private VisaRepository visaRepository;
 
     public List<Demande> getDemandes(){
         return demandeRepository.findAll();
@@ -386,7 +398,7 @@ public class DemandeService {
         }
     }
 
-    private void createInitialStatutDemande(Demande demande) {
+    private StatutDemande createInitialStatutDemande(Demande demande) {
         TypeStatutDemande typeStatutDemande = typeStatutDemandeRepository.findById("1")
                 .orElseThrow(() -> new BusinessValidationException("Type de statut de demande 'Cree' non trouve."));
 
@@ -394,7 +406,45 @@ public class DemandeService {
         statutDemande.setDateStatut(demande.getDateDemande());
         statutDemande.setTypeStatutDemande(typeStatutDemande);
         statutDemande.setDemande(demande);
-        statutDemandeRepository.save(statutDemande);
+        StatutDemande statutDemandeSaved = statutDemandeRepository.save(statutDemande);
+        return statutDemandeSaved;
+    }
+
+    public void tranfererVisa(String numeroVisa, String numeroPasseport, LocalDate dateExpiration,Demande demande) {
+        Visa visa = visaRepository.findFirstByNumero(numeroVisa)
+                .orElseThrow(() -> new BusinessValidationException("Visa non trouve avec le numero: " + numeroVisa));
+
+        Passeport nouveauxPasseport = new Passeport();
+        nouveauxPasseport.setNumero(numeroPasseport);
+        // nouveauxPasseport.setDateExpiration(LocalDate.of(dateExpiration.getYear(), dateExpiration.getMonth(), dateExpiration.getDayOfMonth()));
+        nouveauxPasseport.setDateExpiration(dateExpiration);
+
+        transfererVisa(visa, nouveauxPasseport, demande);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private void transfererVisa(Visa visa,Passeport nouveauxPasseport,Demande demande) {
+
+        //Validation des champs
+        nouveauxPasseport.validateRequiredFields();
+        demande.validateRequiredFields();
+        
+        // Creation de passeport
+        Passeport passeportSaved = passeportService.createPasseport(nouveauxPasseport);
+
+        // Creation de la demande de transfert
+        demande.setPasseport(passeportSaved);
+        Demande demandeSaved = demandeRepository.save(demande);
+
+        // Creation du statut de la demande
+        createInitialStatutDemande(demandeSaved);
+
+        HistoriquePasseportVisa historique = new HistoriquePasseportVisa();
+        historique.setVisa(visa);
+        historique.setPasseport(passeportSaved);
+        historique.setDateHistorique(demandeSaved.getDateDemande());
+        historiquePasseportVisaRepository.save(historique);
+
     }
 
 }

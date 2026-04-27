@@ -35,10 +35,10 @@ public class Passeport {
     }
 
     public Passeport(Integer id, String numero, LocalDate dateExpiration, Personne personne) {
-        this.id = id;
-        this.numero = numero;
-        this.dateExpiration = dateExpiration;
-        this.personne = personne;
+        this.setId(id);
+        this.setNumero(numero);
+        this.setDateExpiration(dateExpiration);
+        this.setPersonne(personne);
     }
 
     public Integer getId() {
@@ -83,5 +83,20 @@ public class Passeport {
             throw new BusinessValidationException("Le passeport doit etre rattache a une personne.");
         }
         this.personne = personne;
+    }
+
+    public void validateRequiredFields() {
+        if (numero == null || numero.isBlank()) {
+            throw new BusinessValidationException("Le numero du passeport est obligatoire.");
+        }
+        if (dateExpiration == null) {
+            throw new BusinessValidationException("La date d'expiration du passeport est obligatoire.");
+        }
+        if (!dateExpiration.isAfter(LocalDate.now())) {
+            throw new BusinessValidationException("La date d'expiration du passeport doit etre dans le futur.");
+        }
+        if (personne == null) {
+            throw new BusinessValidationException("Le passeport doit etre rattache a une personne.");
+        }
     }
 }
