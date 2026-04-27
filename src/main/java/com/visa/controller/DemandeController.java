@@ -1,5 +1,10 @@
 package com.visa.controller;
 
+import com.visa.entity.Personne;
+import com.visa.entity.Visa;
+import com.visa.repository.PersonneRepository;
+import com.visa.repository.VisaRepository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +35,10 @@ import com.visa.service.UtilService;
 
 @Controller
 public class DemandeController {
-
+    @Autowired
+    private PersonneRepository personneRepository;
+    @Autowired
+    private VisaRepository visaRepository;
     @Autowired
     private DemandeService demandeService;
     @Autowired
@@ -43,6 +51,10 @@ public class DemandeController {
     private TypeDemandeService typeDemandeService;
     @Autowired
     private ChampFournirService champFournirService;
+
+    // DemandeController(PersonneRepository personneRepository) {
+    //     this.personneRepository = personneRepository;
+    // }
 
     @GetMapping("/demandes")
     public String listDemandes(Model model) {
@@ -98,6 +110,23 @@ public class DemandeController {
         
         return renderPage(model, "Nouvelle demande", "/WEB-INF/jsp/demande/nouvelle-demande.jsp", "demande-form");
     }
+
+    @GetMapping("/transfert/withData")
+    public String tranfertVisa(Model model) {
+        Personne personne = personneRepository.findById(1).orElse(null);
+        Visa visa = personne == null
+                ? null
+                : visaRepository.findFirstByPersonneIdOrderByIdDesc(personne.getId()).orElse(null);
+
+        model.addAttribute("personne", personne);
+        model.addAttribute("visa", visa);
+        model.addAttribute("typeDemandeId", 1); // Forcer le typeDemandeId à 1 pour le transfert de visa
+        model.addAttribute("nationalites", nationaliteService.getNationalites());
+        model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
+        
+        return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp", "demande-form");
+    }
+    
 
     @GetMapping("/demande/modifier")
     public String editDemande(@RequestParam("id") Integer demandeId, Model model, RedirectAttributes redirectAttributes) {
