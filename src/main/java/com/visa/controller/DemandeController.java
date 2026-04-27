@@ -1,6 +1,5 @@
 package com.visa.controller;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import com.visa.service.NationaliteService;
 import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;
 import com.visa.service.TypeVisaService;
+import com.visa.service.UtilService;
 
 @Controller
 public class DemandeController {
@@ -54,13 +54,35 @@ public class DemandeController {
 
         model.addAttribute("demandes", demandes);
         model.addAttribute("canEditByDemandeId", canEditByDemandeId);
-        return "demandes";
+        return renderPage(model, "Liste des demandes", "demande/demandes", "demandes");
+    }
+
+    @GetMapping("/demande/fiche")
+    public String ficheDemande(@RequestParam("id") Integer demandeId, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Demande demande = demandeService.getDemandeById(demandeId);
+
+            model.addAttribute("demande", demande);
+            model.addAttribute("personne", demande.getPasseport() == null ? null : demande.getPasseport().getPersonne());
+            model.addAttribute("passeport", demande.getPasseport());
+            model.addAttribute("visaTransformable",
+                    demande.getPasseport() == null || demande.getPasseport().getPersonne() == null
+                            ? null
+                            : demandeService.getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
+            model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
+            model.addAttribute("canEdit", demandeService.canEditDemandeByTypeStatutDemande(demandeId));
+
+            return renderPage(model, "Fiche demande", "demande/demande-fiche", "demande-confirmation");
+        } catch (BusinessValidationException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/demandes";
+        }
     }
 
     @GetMapping("/demande/nouvelle")
     public String chooseDemandType(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
             Model model) {
-        Integer typeDemandeId = parseTypeDemandeId(typeDemandeIdParam);
+        Integer typeDemandeId = UtilService.parseTypeDemandeId(typeDemandeIdParam);
         if (typeDemandeId == null) {
             return "redirect:/home";
         }
@@ -74,7 +96,7 @@ public class DemandeController {
         model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
         model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
         
-        return "nouvelle-demande";
+        return renderPage(model, "Nouvelle demande", "demande/nouvelle-demande", "demande-form");
     }
 
     @GetMapping("/demande/modifier")
@@ -104,7 +126,7 @@ public class DemandeController {
             model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
             model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
 
-            return "modifier-demande";
+            return renderPage(model, "Modifier demande", "demande/modifier-demande", "demande-form");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demandes";
@@ -140,23 +162,23 @@ public class DemandeController {
         dto.setPrenom(formValues.get("prenom"));
         dto.setNomJeuneFille(formValues.get("nomJeuneFille"));
         dto.setEmail(formValues.get("email"));
-        dto.setDateNaissance(parseLocalDate(formValues.get("dateNaissance")));
+        dto.setDateNaissance(UtilService.parseLocalDate(formValues.get("dateNaissance")));
         dto.setLieuNaissance(formValues.get("lieuNaissance"));
         dto.setAdresse(formValues.get("adresse"));
         dto.setTelephone(formValues.get("telephone"));
-        dto.setNationalite(parseInteger(formValues.get("nationalite")));
-        dto.setSituationFamiliale(parseInteger(formValues.get("situationFamiliale")));
+        dto.setNationalite(UtilService.parseInteger(formValues.get("nationalite")));
+        dto.setSituationFamiliale(UtilService.parseInteger(formValues.get("situationFamiliale")));
 
         dto.setNumeroPasseport(formValues.get("numeroPasseport"));
-        dto.setDateExpirationPasseport(parseLocalDate(formValues.get("dateExpirationPasseport")));
+        dto.setDateExpirationPasseport(UtilService.parseLocalDate(formValues.get("dateExpirationPasseport")));
 
         dto.setNumeroVisaTransformable(formValues.get("numeroVisaTransformable"));
-        dto.setDateArrivee(parseLocalDate(formValues.get("dateArrivee")));
-        dto.setDateExpirationVisaTransformable(parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
+        dto.setDateArrivee(UtilService.parseLocalDate(formValues.get("dateArrivee")));
+        dto.setDateExpirationVisaTransformable(UtilService.parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
 
-        dto.setDateDemande(parseLocalDate(formValues.get("dateDemande")));
-        dto.setTypeVisa(parseInteger(formValues.get("typeVisa")));
-        dto.setTypeDemandeId(parseInteger(formValues.get("typeDemandeId")));
+        dto.setDateDemande(UtilService.parseLocalDate(formValues.get("dateDemande")));
+        dto.setTypeVisa(UtilService.parseInteger(formValues.get("typeVisa")));
+        dto.setTypeDemandeId(UtilService.parseInteger(formValues.get("typeDemandeId")));
 
         dto.setChampFournirIds(champFournirIds);
 
@@ -166,7 +188,7 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Cree");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return "demande-confirmation";
+            return renderPage(model, "Demande confirmee", "demande/demande-confirmation", "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
@@ -183,29 +205,29 @@ public class DemandeController {
             Model model) {
         CreateDemandeDTO dto = new CreateDemandeDTO();
 
-        Integer demandeId = parseInteger(formValues.get("demandeId"));
+        Integer demandeId = UtilService.parseInteger(formValues.get("demandeId"));
 
         dto.setNom(formValues.get("nom"));
         dto.setPrenom(formValues.get("prenom"));
         dto.setNomJeuneFille(formValues.get("nomJeuneFille"));
         dto.setEmail(formValues.get("email"));
-        dto.setDateNaissance(parseLocalDate(formValues.get("dateNaissance")));
+        dto.setDateNaissance(UtilService.parseLocalDate(formValues.get("dateNaissance")));
         dto.setLieuNaissance(formValues.get("lieuNaissance"));
         dto.setAdresse(formValues.get("adresse"));
         dto.setTelephone(formValues.get("telephone"));
-        dto.setNationalite(parseInteger(formValues.get("nationalite")));
-        dto.setSituationFamiliale(parseInteger(formValues.get("situationFamiliale")));
+        dto.setNationalite(UtilService.parseInteger(formValues.get("nationalite")));
+        dto.setSituationFamiliale(UtilService.parseInteger(formValues.get("situationFamiliale")));
 
         dto.setNumeroPasseport(formValues.get("numeroPasseport"));
-        dto.setDateExpirationPasseport(parseLocalDate(formValues.get("dateExpirationPasseport")));
+        dto.setDateExpirationPasseport(UtilService.parseLocalDate(formValues.get("dateExpirationPasseport")));
 
         dto.setNumeroVisaTransformable(formValues.get("numeroVisaTransformable"));
-        dto.setDateArrivee(parseLocalDate(formValues.get("dateArrivee")));
-        dto.setDateExpirationVisaTransformable(parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
+        dto.setDateArrivee(UtilService.parseLocalDate(formValues.get("dateArrivee")));
+        dto.setDateExpirationVisaTransformable(UtilService.parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
 
-        dto.setDateDemande(parseLocalDate(formValues.get("dateDemande")));
-        dto.setTypeVisa(parseInteger(formValues.get("typeVisa")));
-        dto.setTypeDemandeId(parseInteger(formValues.get("typeDemandeId")));
+        dto.setDateDemande(UtilService.parseLocalDate(formValues.get("dateDemande")));
+        dto.setTypeVisa(UtilService.parseInteger(formValues.get("typeVisa")));
+        dto.setTypeDemandeId(UtilService.parseInteger(formValues.get("typeDemandeId")));
 
         dto.setChampFournirIds(champFournirIds);
 
@@ -225,7 +247,7 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Modifiee");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return "demande-confirmation";
+            return renderPage(model, "Demande confirmee", "demande/demande-confirmation", "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/modifier?id=" + demandeId;
@@ -234,75 +256,12 @@ public class DemandeController {
             return "redirect:/demande/modifier?id=" + demandeId;
         }
     }
-    // @PostMapping("/demande/creer")
-    // @ResponseBody
-    // public CreateDemandeDTO createDemande(@RequestParam Map<String, String> formValues,
-    //         @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds) {
-    //     CreateDemandeDTO dto = new CreateDemandeDTO();
 
-    //     // Etat civil
-    //     dto.nom = formValues.get("nom");
-    //     dto.prenom = formValues.get("prenom");
-    //     dto.nomJeuneFille = formValues.get("nomJeuneFille");
-    //     dto.email = formValues.get("email");
-    //     dto.dateNaissance = parseLocalDate(formValues.get("dateNaissance"));
-    //     dto.lieuNaissance = formValues.get("lieuNaissance");
-    //     dto.adresse = formValues.get("adresse");
-    //     dto.telephone = formValues.get("telephone");
-    //     dto.nationalite = parseInteger(formValues.get("nationalite"));
-    //     dto.situationFamiliale = parseInteger(formValues.get("situationFamiliale"));
-
-    //     // Passeport
-    //     dto.numeroPasseport = formValues.get("numeroPasseport");
-    //     dto.dateExpirationPasseport = parseLocalDate(formValues.get("dateExpirationPasseport"));
-
-    //     // Visa transformable
-    //     dto.numeroVisaTransformable = formValues.get("numeroVisaTransformable");
-    //     dto.dateArrivee = parseLocalDate(formValues.get("dateArrivee"));
-    //     dto.dateExpirationVisaTransformable = parseLocalDate(formValues.get("dateExpirationVisaTransformable"));
-
-    //     // Demande
-    //     dto.dateDemande = parseLocalDate(formValues.get("dateDemande"));
-    //     dto.typeVisa = parseInteger(formValues.get("typeVisa"));
-    //     dto.typeDemandeId = parseInteger(formValues.get("typeDemandeId"));
-
-    //     dto.champFournirIds = champFournirIds;
-    //     return dto;
-    // }
-
-    private Integer parseInteger(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        try {
-            return Integer.valueOf(value);
-        } catch (NumberFormatException exception) {
-            return null;
-        }
+    private String renderPage(Model model, String pageTitle, String contentPage, String pageStyle) {
+        model.addAttribute("pageTitle", pageTitle);
+        model.addAttribute("contentPage", contentPage);
+        model.addAttribute("pageStyle", pageStyle);
+        return "layout";
     }
 
-    private LocalDate parseLocalDate(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        try {
-            return LocalDate.parse(value);
-        } catch (Exception exception) {
-            return null;
-        }
-    }
-
-    private Integer parseTypeDemandeId(String typeDemandeIdParam) {
-        if (typeDemandeIdParam == null || typeDemandeIdParam.isBlank() || "null".equalsIgnoreCase(typeDemandeIdParam)) {
-            return null;
-        }
-
-        try {
-            return Integer.valueOf(typeDemandeIdParam);
-        } catch (NumberFormatException exception) {
-            return null;
-        }
-    }
 }
