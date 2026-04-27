@@ -3,8 +3,8 @@
 
 <div class="page">
     <div class="header">
-        <h1>Nouvelle demande</h1>
-        <p>Formulaire statique organise par sections pour preparer une demande de visa avec les champs issus des tables du modele.</p>
+        <h1>Demande de transfert de visa</h1>
+        <%-- <p>Formulaire statique organise par sections pour preparer une demande de visa avec les champs issus des tables du modele.</p> --%>
         <div class="badge">Type de demande selectionne: ${typeDemande.libelle}</div>
     </div>
 
@@ -21,7 +21,7 @@
     </c:if>
 
     <div class="form-card">
-        <form action="/demande/creer" method="post">
+        <form action="/transfert/execute" method="post">
             <div class="form-grid">
                 <details class="section">
                     <summary>
@@ -130,6 +130,10 @@
                         </c:choose>
                     </div>
                 </details>
+
+                <input type="hidden" name="typeDemandeId" value="${typeDemande.id}">
+                <input type="hidden" name="personneId" value="${personne.id}">
+                <input type="hidden" name="numeroVisa" value="${visa.numero}">
 
                 <details class="section">
                     <summary>

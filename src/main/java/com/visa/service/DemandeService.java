@@ -416,6 +416,8 @@ public class DemandeService {
 
         Passeport nouveauxPasseport = new Passeport();
         nouveauxPasseport.setNumero(numeroPasseport);
+
+        nouveauxPasseport.setPersonne(visa.getPersonne());
         // nouveauxPasseport.setDateExpiration(LocalDate.of(dateExpiration.getYear(), dateExpiration.getMonth(), dateExpiration.getDayOfMonth()));
         nouveauxPasseport.setDateExpiration(dateExpiration);
 
@@ -427,13 +429,16 @@ public class DemandeService {
 
         //Validation des champs
         nouveauxPasseport.validateRequiredFields();
-        demande.validateRequiredFields();
         
         // Creation de passeport
         Passeport passeportSaved = passeportService.createPasseport(nouveauxPasseport);
-
+        
+        
         // Creation de la demande de transfert
         demande.setPasseport(passeportSaved);
+        
+        demande.validateRequiredFields();
+
         Demande demandeSaved = demandeRepository.save(demande);
 
         // Creation du statut de la demande

@@ -16,7 +16,12 @@ public class PasseportService {
             throw new IllegalArgumentException("Le passeport ne peut pas être null.");
         }
 
-        Passeport existingPasseport = passeportRepository.findById(passeport.getId()).get();
+        // If ID is null, the passeport doesn't exist yet
+        // if (passeport.getId() == null) {
+        //     return false;
+        // }
+
+        Passeport existingPasseport = passeportRepository.findFirstByNumeroOrderByIdAsc(passeport.getNumero()).orElse(null);
 
         if (null == existingPasseport) {
             return false;

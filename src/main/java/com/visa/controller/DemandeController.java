@@ -54,7 +54,7 @@ public class DemandeController {
     private ChampFournirService champFournirService;
 
     // DemandeController(PersonneRepository personneRepository) {
-    //     this.personneRepository = personneRepository;
+    // this.personneRepository = personneRepository;
     // }
 
     @GetMapping("/demandes")
@@ -63,7 +63,7 @@ public class DemandeController {
         Map<Integer, Boolean> canEditByDemandeId = demandes.stream()
                 .collect(Collectors.toMap(
                         Demande::getId,
-                demande -> demandeService.canEditDemandeByTypeStatutDemande(demande.getId())));
+                        demande -> demandeService.canEditDemandeByTypeStatutDemande(demande.getId())));
 
         model.addAttribute("demandes", demandes);
         model.addAttribute("canEditByDemandeId", canEditByDemandeId);
@@ -71,17 +71,20 @@ public class DemandeController {
     }
 
     @GetMapping("/demande/fiche")
-    public String ficheDemande(@RequestParam("id") Integer demandeId, Model model, RedirectAttributes redirectAttributes) {
+    public String ficheDemande(@RequestParam("id") Integer demandeId, Model model,
+            RedirectAttributes redirectAttributes) {
         try {
             Demande demande = demandeService.getDemandeById(demandeId);
 
             model.addAttribute("demande", demande);
-            model.addAttribute("personne", demande.getPasseport() == null ? null : demande.getPasseport().getPersonne());
+            model.addAttribute("personne",
+                    demande.getPasseport() == null ? null : demande.getPasseport().getPersonne());
             model.addAttribute("passeport", demande.getPasseport());
             model.addAttribute("visaTransformable",
                     demande.getPasseport() == null || demande.getPasseport().getPersonne() == null
                             ? null
-                            : demandeService.getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
+                            : demandeService
+                                    .getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
             model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
             model.addAttribute("canEdit", demandeService.canEditDemandeByTypeStatutDemande(demandeId));
 
@@ -101,14 +104,14 @@ public class DemandeController {
         }
 
         TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
-        
+
         // Charger les listes via le service
         model.addAttribute("typeDemande", typeDemande);
         model.addAttribute("typeDemandeId", typeDemandeId);
         model.addAttribute("nationalites", nationaliteService.getNationalites());
         model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
         model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
-        
+
         return renderPage(model, "Nouvelle demande", "/WEB-INF/jsp/demande/nouvelle-demande.jsp", "demande-form");
     }
 
@@ -124,34 +127,55 @@ public class DemandeController {
         model.addAttribute("typeDemandeId", 1); // Forcer le typeDemandeId à 1 pour le transfert de visa
         model.addAttribute("nationalites", nationaliteService.getNationalites());
         model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
-        
-        return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp", "demande-form");
+
+        return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp",
+                "demande-form");
     }
 
     @PostMapping("/transfert/execute")
     public String executeTransfert(@RequestParam Map<String, String> formValues, Model model) {
-        
-        String visaNumero = formValues.get("numeroVisa");
-        String numeroPasseport = formValues.get("numeroPasseport");
-        LocalDate dateExpiration = UtilService.parseLocalDate(formValues.get("dateExpirationPasseport"));
 
-        ///Demande
-        Demande demande = new Demande();
-        demande.setDateDemande(LocalDate.now());
-        demande.setTypeDemande(typeDemandeService.getById(1)); // Forcer le type de demande à 1 pour le transfert de visa
+        try {
 
-        demandeService.tranfererVisa(visaNumero, numeroPasseport, dateExpiration, demande);
+            String visaNumero = formValues.get("numeroVisa");
+            String numeroPasseport = formValues.get("numeroPasseport");
+            LocalDate dateExpiration = UtilService.parseLocalDate(formValues.get("dateExpirationPasseport"));
 
-        return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp", "demande-form");
+            /// Demande
+            Demande demande = new Demande();
+            demande.setDateDemande(LocalDate.now());
+            demande.setTypeDemande(typeDemandeService.getById(3)); // Forcer le type de demande à 3 pour le transfert de
+                                                                   // visa
+
+            demandeService.tranfererVisa(visaNumero, numeroPasseport, dateExpiration, demande);
+            model.addAttribute("success", true);
+            model.addAttribute("succesMessage", "Transfert de visa réussi. La demande a été créée avec succès.");
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Erreur lors du transfert de visa: " + e.getMessage());
+        }
+     
+        Personne personne = personneRepository.findById(1).orElse(null);
+        Visa visa = personne == null
+                ? null
+                : visaRepository.findFirstByPersonneIdOrderByIdDesc(personne.getId()).orElse(null);
+
+        model.addAttribute("personne", personne);
+        model.addAttribute("visa", visa);
+        model.addAttribute("typeDemandeId", 3); // Forcer le typeDemandeId à 3 pour le transfert de visa
+        model.addAttribute("nationalites", nationaliteService.getNationalites());
+        model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
+        return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp",
+                "demande-form");
 
     }
-    
 
     @GetMapping("/demande/modifier")
-    public String editDemande(@RequestParam("id") Integer demandeId, Model model, RedirectAttributes redirectAttributes) {
+    public String editDemande(@RequestParam("id") Integer demandeId, Model model,
+            RedirectAttributes redirectAttributes) {
         try {
             if (!demandeService.canEditDemandeByTypeStatutDemande(demandeId)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Modification interdite: le type_statut_demande doit etre egal a 1.");
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Modification interdite: le type_statut_demande doit etre egal a 1.");
                 return "redirect:/demandes";
             }
 
@@ -162,14 +186,17 @@ public class DemandeController {
             model.addAttribute("demande", demande);
             model.addAttribute("typeDemande", typeDemande);
             model.addAttribute("typeDemandeId", typeDemandeId);
-            model.addAttribute("selectedTypeVisaId", demande.getTypeVisa() == null ? null : demande.getTypeVisa().getId());
+            model.addAttribute("selectedTypeVisaId",
+                    demande.getTypeVisa() == null ? null : demande.getTypeVisa().getId());
             model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
-            model.addAttribute("personne", demande.getPasseport() == null ? null : demande.getPasseport().getPersonne());
+            model.addAttribute("personne",
+                    demande.getPasseport() == null ? null : demande.getPasseport().getPersonne());
             model.addAttribute("passeport", demande.getPasseport());
             model.addAttribute("visaTransformable",
                     demande.getPasseport() == null || demande.getPasseport().getPersonne() == null
                             ? null
-                            : demandeService.getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
+                            : demandeService
+                                    .getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
             model.addAttribute("nationalites", nationaliteService.getNationalites());
             model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
             model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
@@ -198,9 +225,8 @@ public class DemandeController {
         return response;
     }
 
-
     @PostMapping("/demande/creer")
-        public String createDemande(@RequestParam Map<String, String> formValues,
+    public String createDemande(@RequestParam Map<String, String> formValues,
             @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds,
             RedirectAttributes redirectAttributes,
             Model model) {
@@ -222,7 +248,8 @@ public class DemandeController {
 
         dto.setNumeroVisaTransformable(formValues.get("numeroVisaTransformable"));
         dto.setDateArrivee(UtilService.parseLocalDate(formValues.get("dateArrivee")));
-        dto.setDateExpirationVisaTransformable(UtilService.parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
+        dto.setDateExpirationVisaTransformable(
+                UtilService.parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
 
         dto.setDateDemande(UtilService.parseLocalDate(formValues.get("dateDemande")));
         dto.setTypeVisa(UtilService.parseInteger(formValues.get("typeVisa")));
@@ -236,13 +263,16 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Cree");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp", "demande-confirmation");
+            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp",
+                    "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
-            return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
+            return "redirect:/demande/nouvelle?typeDemandeId="
+                    + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
         } catch (Exception exception) {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur technique lors de la creation de la demande.");
-            return "redirect:/demande/nouvelle?typeDemandeId=" + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
+            return "redirect:/demande/nouvelle?typeDemandeId="
+                    + (dto.getTypeDemandeId() == null ? "" : dto.getTypeDemandeId());
         }
     }
 
@@ -271,7 +301,8 @@ public class DemandeController {
 
         dto.setNumeroVisaTransformable(formValues.get("numeroVisaTransformable"));
         dto.setDateArrivee(UtilService.parseLocalDate(formValues.get("dateArrivee")));
-        dto.setDateExpirationVisaTransformable(UtilService.parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
+        dto.setDateExpirationVisaTransformable(
+                UtilService.parseLocalDate(formValues.get("dateExpirationVisaTransformable")));
 
         dto.setDateDemande(UtilService.parseLocalDate(formValues.get("dateDemande")));
         dto.setTypeVisa(UtilService.parseInteger(formValues.get("typeVisa")));
@@ -285,7 +316,8 @@ public class DemandeController {
         }
 
         if (!demandeService.canEditDemandeByTypeStatutDemande(demandeId)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Modification interdite: le type_statut_demande doit etre egal a 1.");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Modification interdite: le type_statut_demande doit etre egal a 1.");
             return "redirect:/demandes";
         }
 
@@ -295,12 +327,14 @@ public class DemandeController {
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Modifiee");
             model.addAttribute("champFournirCount", champFournirIds == null ? 0 : champFournirIds.size());
-            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp", "demande-confirmation");
+            return renderPage(model, "Demande confirmee", "/WEB-INF/jsp/demande/demande-confirmation.jsp",
+                    "demande-confirmation");
         } catch (BusinessValidationException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/demande/modifier?id=" + demandeId;
         } catch (Exception exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Erreur technique lors de la modification de la demande.");
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Erreur technique lors de la modification de la demande.");
             return "redirect:/demande/modifier?id=" + demandeId;
         }
     }

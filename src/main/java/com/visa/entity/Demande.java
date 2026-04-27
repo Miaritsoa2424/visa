@@ -28,8 +28,8 @@ public class Demande {
     @JoinColumn(name = "passeport_id", nullable = false)
     private Passeport passeport;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "type_visa_id", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "type_visa_id", nullable = true)
     private TypeVisa typeVisa;
 
     @ManyToOne(optional = false)
