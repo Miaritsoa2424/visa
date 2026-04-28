@@ -10,4 +10,6 @@ import com.visa.entity.DossierProStatut;
 @Repository
 public interface DossierProStatutRepository extends JpaRepository<DossierProStatut, Integer> {
     List<DossierProStatut> findByDossierProfessionnelId(Integer dossierProfessionnelId);
+
+    List<DossierProStatut> findByDossierProfessionnelDemandeIdOrderByIdAsc(Integer demandeId);
 }

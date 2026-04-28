@@ -20,6 +20,9 @@
     <c:if test="${pageStyle == 'demande-confirmation'}">
         <link rel="stylesheet" href="/css/demande-confirmation.css">
     </c:if>
+    <c:if test="${pageStyle == 'dossier-pro'}">
+        <link rel="stylesheet" href="/css/dossier-pro.css">
+    </c:if>
 </head>
 <body>
 <aside class="app-sidebar" aria-label="Navigation principale">
@@ -39,6 +42,7 @@
             <ul class="sidebar-submenu">
                 <li><a href="/demandes"><span class="sidebar-icon">&#128203;</span> <span class="sidebar-label">Liste (/demandes)</span></a></li>
                 <li><a href="/home"><span class="sidebar-icon">&#10133;</span> <span class="sidebar-label">Creation (/home)</span></a></li>
+                <li><a href="/dossier-pro"><span class="sidebar-icon">&#128193;</span> <span class="sidebar-label">Dossiers pro</span></a></li>
             </ul>
         </details>
     </nav>
