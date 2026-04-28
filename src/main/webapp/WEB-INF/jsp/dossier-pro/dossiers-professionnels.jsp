@@ -8,6 +8,12 @@
         <div class="badge">Demande selectionnee: #${demandeId}</div>
     </div>
 
+    <c:if test="${not empty errorMessage}">
+        <div class="alert alert-error">
+            <strong>Erreur:</strong> ${errorMessage}
+        </div>
+    </c:if>
+
     <c:if test="${not empty infoMessage}">
         <div class="alert alert-success">
             <strong>Information:</strong> ${infoMessage}
@@ -17,6 +23,10 @@
     <div class="form-card">
         <div class="form-actions top-actions">
             <a class="btn btn-secondary" href="/demandes">Retour aux demandes</a>
+            <form action="/dossier-pro/terminer-scan" method="post" class="inline-form">
+                <input type="hidden" name="demandeId" value="${demandeId}">
+                <button class="btn btn-primary" type="submit">Terminer scan</button>
+            </form>
         </div>
 
         <c:choose>

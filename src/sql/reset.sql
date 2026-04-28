@@ -20,5 +20,7 @@ TRUNCATE TABLE
 	pays,
 	nationalite,
 	situation_familiale,
-	type_visa
+	type_visa,
+	dossier_pro_statut,
+	statut_dossier_pro 
 RESTART IDENTITY CASCADE;

@@ -81,6 +81,10 @@ body {
     margin-bottom: 12px;
 }
 
+.inline-form {
+    margin: 0;
+}
+
 .dossier-pro-table th,
 .dossier-pro-table td {
     padding: 12px;
