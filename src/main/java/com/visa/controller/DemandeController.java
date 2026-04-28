@@ -2,6 +2,7 @@ package com.visa.controller;
 
 import com.visa.entity.Personne;
 import com.visa.entity.Visa;
+import com.visa.repository.PaysRepository;
 import com.visa.repository.PersonneRepository;
 import com.visa.repository.VisaRepository;
 
@@ -33,6 +34,8 @@ import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;
 import com.visa.service.TypeVisaService;
 import com.visa.service.UtilService;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @Controller
 public class DemandeController {
@@ -40,6 +43,8 @@ public class DemandeController {
     private PersonneRepository personneRepository;
     @Autowired
     private VisaRepository visaRepository;
+    @Autowired
+    private PaysRepository paysRepository;
 
     private static final Integer TRANSFERT_TYPE_DEMANDE_ID = 4;
 
@@ -172,23 +177,81 @@ public class DemandeController {
         return renderPage(model, "Verification du visa source", "demande/check-numero-visa.jsp", "demande-form");
     }
 
-    @GetMapping("/demande/transfert-form-avec-donnee")
-    public String transfertFormWithData(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
-            Model model) {
-        return renderTransferPlaceholderPage(typeDemandeIdParam, model,
-                "Formulaire de transfert avec donnees",
-                "La page de redirection vers le formulaire de transfert avec donnees est disponible. Le formulaire complet sera ajoute plus tard.",
-                "demande/transfert-form-avec-donnee.jsp");
+    @GetMapping("/demande/transfert-form-sans-donnee")
+    public String transfertFormWithoutData(Model model) {
+
+        Integer typeDemandeId = 4;
+
+        TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
+        
+        // Charger les listes via le service
+        model.addAttribute("typeDemande", typeDemande);
+        model.addAttribute("typeDemandeId", typeDemandeId);
+        model.addAttribute("nationalites", nationaliteService.getNationalites());
+        model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
+        model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
+        model.addAttribute("pays", paysRepository.findAll());
+        
+        return renderPage(model, "Formulaire de transfert sans donnees", "demande/demande-transfert-without-data.jsp", "demande-form");
     }
 
-    @GetMapping("/demande/transfert-form-sans-donnee")
-    public String transfertFormWithoutData(@RequestParam(value = "typeDemandeId", required = false) String typeDemandeIdParam,
+    @PostMapping("/demande/transfert-sans-donnee")
+    public String transfertWithoutData(@RequestParam Map<String, String> formValues,
+            @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds,
+            RedirectAttributes redirectAttributes,
             Model model) {
-        return renderTransferPlaceholderPage(typeDemandeIdParam, model,
-                "Formulaire de transfert sans donnees",
-                "La page de redirection vers le formulaire de transfert sans donnees est disponible. Le formulaire complet sera ajoute plus tard.",
-                "demande/transfert-form-sans-donnee.jsp");
+        CreateDemandeDTO dto = new CreateDemandeDTO();
+
+        dto.setNom(formValues.get("nom"));
+        dto.setPrenom(formValues.get("prenom"));
+        dto.setNomJeuneFille(formValues.get("nomJeuneFille"));
+        dto.setEmail(formValues.get("email"));
+        dto.setDateNaissance(UtilService.parseLocalDate(formValues.get("dateNaissance")));
+        dto.setLieuNaissance(formValues.get("lieuNaissance"));
+        dto.setAdresse(formValues.get("adresse"));
+        dto.setTelephone(formValues.get("telephone"));
+        dto.setNationalite(UtilService.parseInteger(formValues.get("nationalite")));
+        dto.setSituationFamiliale(UtilService.parseInteger(formValues.get("situationFamiliale")));
+
+        dto.setNumeroPasseport(formValues.get("numeroPasseport"));
+        dto.setDateExpirationPasseport(UtilService.parseLocalDate(formValues.get("dateExpirationPasseport")));
+
+        dto.setNumeroPasseportAncien(formValues.get("numeroPasseportAncien"));
+        dto.setDateExpirationPasseportAncien(UtilService.parseLocalDate(formValues.get("dateExpirationPasseportAncien")));
+
+        String numeroVisa = formValues.get("numeroVisaAncien");
+        dto.setNumeroVisaAncien(numeroVisa);
+        dto.setNumeroVisaTransformable(numeroVisa);
+        dto.setDateEntre(UtilService.parseLocalDate(formValues.get("dateEntre")));
+        dto.setDateExpiration(UtilService.parseLocalDate(formValues.get("dateExpiration")));
+        dto.setDateDelivrance(UtilService.parseLocalDate(formValues.get("dateDelivrance")));
+        dto.setIdPaysEntre(UtilService.parseInteger(formValues.get("idPaysEntre")));
+        Integer idTypeVisa = UtilService.parseInteger(formValues.get("idTypeVisa"));
+        dto.setIdTypeVisa(idTypeVisa);
+        dto.setTypeVisa(idTypeVisa);
+
+        dto.setChampFournirIds(champFournirIds);
+
+        try {
+            demandeService.tranfererVisaWithoutData(dto);
+            model.addAttribute("success", true);
+            model.addAttribute("succesMessage", "Transfert de visa réussi. La demande a été créée avec succès.");
+            model.addAttribute("typeDemande", typeDemandeService.getById(TRANSFERT_TYPE_DEMANDE_ID));
+            model.addAttribute("typeDemandeId", TRANSFERT_TYPE_DEMANDE_ID);
+            model.addAttribute("nationalites", nationaliteService.getNationalites());
+            model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
+            model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
+            model.addAttribute("pays", paysRepository.findAll());
+            return renderPage(model, "Transfert de Visa", "demande/demande-transfert-without-data.jsp", "demande-form");
+        } catch (BusinessValidationException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/demande/transfert-form-sans-donnee";
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors du transfert de visa: " + exception.getMessage());
+            return "redirect:/demande/transfert-form-sans-donnee";
+        }
     }
+    
 
     @GetMapping("/transfert/withData")
     public String tranfertVisa(@RequestParam(value = "numeroVisa") String numeroVisa, Model model) {
@@ -255,6 +318,7 @@ public class DemandeController {
 
     }
 
+    
     @GetMapping("/demande/modifier")
     public String editDemande(@RequestParam("id") Integer demandeId, Model model,
             RedirectAttributes redirectAttributes) {
