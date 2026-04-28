@@ -166,7 +166,7 @@ public class DemandeController {
                         ? "Oui, le visa existe dans la base de donnees."
                         : "Non, le visa n'existe pas dans la base de donnees.");
         model.addAttribute("redirectUrl", visaExiste
-                ? "/demande/transfert-form-avec-donnee?typeDemandeId=" + typeDemandeId
+                ? "/transfert/withData?numeroVisa=" + numeroVisa
                 : "/demande/transfert-form-sans-donnee?typeDemandeId=" + typeDemandeId);
 
         return renderPage(model, "Verification du visa source", "demande/check-numero-visa.jsp", "demande-form");
@@ -191,11 +191,21 @@ public class DemandeController {
     }
 
     @GetMapping("/transfert/withData")
-    public String tranfertVisa(Model model) {
-        Personne personne = personneRepository.findById(1).orElse(null);
-        Visa visa = personne == null
-                ? null
-                : visaRepository.findFirstByPersonneIdOrderByIdDesc(personne.getId()).orElse(null);
+    public String tranfertVisa(@RequestParam(value = "numeroVisa") String numeroVisa, Model model) {
+        Visa visa = visaRepository.findFirstByNumero(numeroVisa).orElse(null);
+        if (visa == null) {
+            model.addAttribute("errorMessage", "Visa avec le numero " + numeroVisa + " n'existe pas.");
+            return renderPage(model, "Transfert de Visa", "demande/check-numero-visa.jsp", "demande-form");
+        }
+        Personne personne = visa.getPersonne();
+        if (personne == null) {
+            model.addAttribute("errorMessage", "Aucune personne associee au visa numero " + numeroVisa + ".");
+            return renderPage(model, "Transfert de Visa", "demande/check-numero-visa.jsp", "demande-form");
+        }
+        // Personne personne = personneRepository.findById(1).orElse(null);
+        // Visa visa = personne == null
+                // ? null
+                // : visaRepository.findFirstByPersonneIdOrderByIdDesc(personne.getId()).orElse(null);
 
         model.addAttribute("personne", personne);
         model.addAttribute("visa", visa);
@@ -216,31 +226,32 @@ public class DemandeController {
             String numeroPasseport = formValues.get("numeroPasseport");
             LocalDate dateExpiration = UtilService.parseLocalDate(formValues.get("dateExpirationPasseport"));
 
+            //Visa
+            Visa visa = visaRepository.findFirstByNumero(visaNumero)
+                    .orElseThrow(() -> new BusinessValidationException("Visa avec le numero " + visaNumero + " n'existe pas."));
+
             /// Demande
             Demande demande = new Demande();
             demande.setDateDemande(LocalDate.now());
-            demande.setTypeDemande(typeDemandeService.getById(3)); // Forcer le type de demande à 3 pour le transfert de
+            demande.setTypeDemande(typeDemandeService.getById(4)); // Forcer le type de demande à 3 pour le transfert de
                                                                    // visa
-
+            demande.setTypeVisa(visa.getTypeVisa());
             demandeService.tranfererVisa(visaNumero, numeroPasseport, dateExpiration, demande);
             model.addAttribute("success", true);
             model.addAttribute("succesMessage", "Transfert de visa réussi. La demande a été créée avec succès.");
+
+            Personne personne = visa.getPersonne();
+
+            model.addAttribute("personne", personne);
+            model.addAttribute("visa", visa);
+            model.addAttribute("typeDemandeId", 3); // Forcer le typeDemandeId à 3 pour le transfert de visa
+            model.addAttribute("nationalites", nationaliteService.getNationalites());
+            model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Erreur lors du transfert de visa: " + e.getMessage());
         }
-     
-        Personne personne = personneRepository.findById(1).orElse(null);
-        Visa visa = personne == null
-                ? null
-                : visaRepository.findFirstByPersonneIdOrderByIdDesc(personne.getId()).orElse(null);
-
-        model.addAttribute("personne", personne);
-        model.addAttribute("visa", visa);
-        model.addAttribute("typeDemandeId", 3); // Forcer le typeDemandeId à 3 pour le transfert de visa
-        model.addAttribute("nationalites", nationaliteService.getNationalites());
-        model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
-        return renderPage(model, "Transfert de Visa", "/WEB-INF/jsp/demande/demande-transfert-with-data.jsp",
-                "demande-form");
+        return renderPage(model, "Transfert de Visa", "demande/demande-transfert-with-data.jsp",
+        "demande-form");
 
     }
 
