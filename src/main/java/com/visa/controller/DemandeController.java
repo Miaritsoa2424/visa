@@ -94,6 +94,7 @@ public class DemandeController {
                             : demandeService
                                     .getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
             model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
+            model.addAttribute("champsFournirWithStatus", demandeService.getChampsFournirWithStatus(demandeId));
             model.addAttribute("canEdit", demandeService.canEditDemandeByTypeStatutDemande(demandeId));
 
             return renderPage(model, "Fiche demande", "demande/demande-fiche.jsp", "demande-confirmation");
