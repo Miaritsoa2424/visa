@@ -40,6 +40,34 @@
         </div>
 
         <div class="card">
+            <h2>Champs a fournir</h2>
+            <c:choose>
+                <c:when test="${not empty champsFournirWithStatus}">
+                    <div class="summary">
+                        <c:forEach var="champ" items="${champsFournirWithStatus}">
+                            <div class="item item-span-2">
+                                <span class="label">
+                                    ${champ.libelle}
+                                    <c:choose>
+                                        <c:when test="${champ.isFourni}">
+                                            <span style="color: green; margin-left: 10px;">✓ Fourni</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span style="color: red; margin-left: 10px;">✗ A fournir</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </span>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <p>Aucun champ requis pour cette demande.</p>
+                </c:otherwise>
+            </c:choose>
+        </div>
+
+        <div class="card">
             <h2>Etat civil</h2>
             <div class="summary">
                 <div class="item">

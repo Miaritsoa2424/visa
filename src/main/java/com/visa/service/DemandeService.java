@@ -1,9 +1,11 @@
 package com.visa.service;
 
-import com.visa.repository.PaysRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ import com.visa.repository.DossierProfessionnelRepository;
 import com.visa.repository.HistoriquePasseportVisaRepository;
 import com.visa.repository.NationaliteRepository;
 import com.visa.repository.PasseportRepository;
+import com.visa.repository.PaysRepository;
 import com.visa.repository.PersonneRepository;
 import com.visa.repository.SituationFamilialeRepository;
 import com.visa.repository.StatutDemandeRepository;
@@ -106,6 +109,42 @@ public class DemandeService {
                 .collect(Collectors.toSet());
     }
 
+    public List<DossierProfessionnel> getDossierProfessionnelByDemandeId(Integer demandeId) {
+        return dossierProfessionnelRepository.findByDemandeId(demandeId);
+    }
+
+    public List<Map<String, Object>> getChampsFournirWithStatus(Integer demandeId) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande.getTypeVisa() == null) {
+            return new ArrayList<>();
+        }
+
+        List<ChampFournir> champsRequis = champFournirRepository.findByTypeVisaId(demande.getTypeVisa().getId());
+        List<DossierProfessionnel> dossiersFournis = dossierProfessionnelRepository.findByDemandeId(demandeId);
+        
+        Set<Integer> champFournirIdsFournis = dossiersFournis.stream()
+                .map(d -> d.getChampFournir().getId())
+                .collect(Collectors.toSet());
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ChampFournir champ : champsRequis) {
+            Map<String, Object> champMap = new HashMap<>();
+            champMap.put("id", champ.getId());
+            champMap.put("libelle", champ.getLibelle());
+            champMap.put("typeDonnee", champ.getTypeDonnee());
+            champMap.put("isFourni", champFournirIdsFournis.contains(champ.getId()));
+            
+            DossierProfessionnel dossier = dossiersFournis.stream()
+                    .filter(d -> d.getChampFournir().getId().equals(champ.getId()))
+                    .findFirst()
+                    .orElse(null);
+            champMap.put("valeur", dossier != null ? dossier.getValeur() : null);
+            
+            result.add(champMap);
+        }
+        return result;
+    }
+
     public VisaTransformable getVisaTransformableByPersonneId(Integer personneId) {
         return visaTransformableRepository.findFirstByPersonneIdOrderByIdAsc(personneId).orElse(null);
     }
@@ -119,6 +158,29 @@ public class DemandeService {
         }
 
         return "1".equals(statutDemande.getTypeStatutDemande().getId());
+    }
+
+    public boolean canOpenModifierPageByTypeStatutDemande(Integer demandeId) {
+        StatutDemande statutDemande = statutDemandeRepository
+                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
+                .orElse(null);
+        if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
+            return false;
+        }
+
+        String typeStatutDemandeId = statutDemande.getTypeStatutDemande().getId();
+        return "1".equals(typeStatutDemandeId) || "2".equals(typeStatutDemandeId);
+    }
+
+    public boolean isScanTermineByTypeStatutDemandeId(Integer demandeId) {
+        StatutDemande statutDemande = statutDemandeRepository
+                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
+                .orElse(null);
+        if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
+            return false;
+        }
+
+        return "2".equals(statutDemande.getTypeStatutDemande().getId());
     }
 
     public boolean visaExistsByNumero(String numeroVisa) {

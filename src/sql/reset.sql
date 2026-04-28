@@ -6,6 +6,7 @@ TRUNCATE TABLE
 	carte_resident,
 	statut_visa,
 	visa,
+	fichier_uploade,
 	dossier_professionnel,
 	statut_demande,
 	demande,

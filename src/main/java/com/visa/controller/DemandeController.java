@@ -1,11 +1,5 @@
 package com.visa.controller;
 
-import com.visa.entity.Personne;
-import com.visa.entity.Visa;
-import com.visa.repository.PaysRepository;
-import com.visa.repository.PersonneRepository;
-import com.visa.repository.VisaRepository;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,8 +19,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.visa.dto.CreateDemandeDTO;
 import com.visa.entity.ChampFournir;
 import com.visa.entity.Demande;
+import com.visa.entity.Personne;
 import com.visa.entity.TypeDemande;
+import com.visa.entity.Visa;
 import com.visa.exception.BusinessValidationException;
+import com.visa.repository.PaysRepository;
+import com.visa.repository.PersonneRepository;
+import com.visa.repository.VisaRepository;
 import com.visa.service.ChampFournirService;
 import com.visa.service.DemandeService;
 import com.visa.service.NationaliteService;
@@ -34,7 +33,6 @@ import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;
 import com.visa.service.TypeVisaService;
 import com.visa.service.UtilService;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @Controller
@@ -94,6 +92,7 @@ public class DemandeController {
                             : demandeService
                                     .getVisaTransformableByPersonneId(demande.getPasseport().getPersonne().getId()));
             model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
+            model.addAttribute("champsFournirWithStatus", demandeService.getChampsFournirWithStatus(demandeId));
             model.addAttribute("canEdit", demandeService.canEditDemandeByTypeStatutDemande(demandeId));
 
             return renderPage(model, "Fiche demande", "demande/demande-fiche.jsp", "demande-confirmation");
@@ -323,9 +322,9 @@ public class DemandeController {
     public String editDemande(@RequestParam("id") Integer demandeId, Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            if (!demandeService.canEditDemandeByTypeStatutDemande(demandeId)) {
+            if (!demandeService.canOpenModifierPageByTypeStatutDemande(demandeId)) {
                 redirectAttributes.addFlashAttribute("errorMessage",
-                        "Modification interdite: le type_statut_demande doit etre egal a 1.");
+                        "Modification interdite: le type_statut_demande doit etre egal a 1 ou 2.");
                 return "redirect:/demandes";
             }
 
@@ -350,6 +349,7 @@ public class DemandeController {
             model.addAttribute("nationalites", nationaliteService.getNationalites());
             model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
             model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
+            model.addAttribute("isScanTermine", demandeService.isScanTermineByTypeStatutDemandeId(demandeId));
 
             return renderPage(model, "Modifier demande", "demande/modifier-demande.jsp", "demande-form");
         } catch (BusinessValidationException exception) {
