@@ -158,7 +158,8 @@
                         <span>Fichier deja uploade</span>
                     </c:when>
                     <c:otherwise>
-                        <button class="btn btn-secondary" type="button">Scanner les fichiers</button>
+                    <a href="/dossier-pro?demandeId=${demande.id}" class="btn btn-secondary">Scanner les fichiers</a>
+                        <%-- <button class="btn btn-secondary" type="button">Scanner les fichiers</button> --%>
                     </c:otherwise>
                 </c:choose>
                 <button class="btn btn-primary" type="submit">Enregistrer les changements</button>

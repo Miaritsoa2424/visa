@@ -3,6 +3,7 @@ package com.visa.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,17 +19,15 @@ import com.visa.service.DossierProfessionnelService;
 @Controller
 public class DossierProController {
 
-    private static final Integer DEMANDE_ID_FIXE = 1;
-
     @Autowired
     private DossierProfessionnelService dossierProfessionnelService;
 
     @GetMapping("/dossier-pro")
-    public String listDossiersProfessionnels(Model model) {
+    public String listDossiersProfessionnels(@Param("demandeId") Integer demandeId, Model model) {
         List<DossierProfessionnelStatutDTO> dossiersProfessionnels = dossierProfessionnelService
-                .getDossiersProfessionnelsAvecStatutsByDemandeId(DEMANDE_ID_FIXE);
+                .getDossiersProfessionnelsAvecStatutsByDemandeId(demandeId);
 
-        model.addAttribute("demandeId", DEMANDE_ID_FIXE);
+        model.addAttribute("demandeId", demandeId);
         model.addAttribute("dossiersProfessionnels", dossiersProfessionnels);
         return renderPage(model, "Dossiers professionnels", "dossier-pro/dossiers-professionnels.jsp", "dossier-pro");
     }
