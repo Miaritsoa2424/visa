@@ -153,6 +153,14 @@
 
             <div class="form-actions">
                 <a class="btn btn-secondary" href="/demandes">Annuler</a>
+                <c:choose>
+                    <c:when test="${isScanTermine}">
+                        <span>Fichier deja uploade</span>
+                    </c:when>
+                    <c:otherwise>
+                        <button class="btn btn-secondary" type="button">Scanner les fichiers</button>
+                    </c:otherwise>
+                </c:choose>
                 <button class="btn btn-primary" type="submit">Enregistrer les changements</button>
             </div>
         </form>

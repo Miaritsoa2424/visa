@@ -112,6 +112,13 @@ CREATE TABLE dossier_professionnel(
    FOREIGN KEY(champ_fournir_id) REFERENCES champ_fournir(id)
 );
 
+CREATE TABLE fichier_uploade(
+   id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   valeur TEXT,
+   dossier_professionnel_id INTEGER NOT NULL,
+   FOREIGN KEY(dossier_professionnel_id) REFERENCES dossier_professionnel(id)
+);
+
 CREATE TABLE visa(
    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
    numero VARCHAR(50) NOT NULL UNIQUE,

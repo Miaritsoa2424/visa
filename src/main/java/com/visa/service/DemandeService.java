@@ -160,6 +160,29 @@ public class DemandeService {
         return "1".equals(statutDemande.getTypeStatutDemande().getId());
     }
 
+    public boolean canOpenModifierPageByTypeStatutDemande(Integer demandeId) {
+        StatutDemande statutDemande = statutDemandeRepository
+                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
+                .orElse(null);
+        if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
+            return false;
+        }
+
+        String typeStatutDemandeId = statutDemande.getTypeStatutDemande().getId();
+        return "1".equals(typeStatutDemandeId) || "2".equals(typeStatutDemandeId);
+    }
+
+    public boolean isScanTermineByTypeStatutDemandeId(Integer demandeId) {
+        StatutDemande statutDemande = statutDemandeRepository
+                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
+                .orElse(null);
+        if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
+            return false;
+        }
+
+        return "2".equals(statutDemande.getTypeStatutDemande().getId());
+    }
+
     public boolean visaExistsByNumero(String numeroVisa) {
         String numeroNormalise = normalize(numeroVisa);
         if (numeroNormalise == null) {

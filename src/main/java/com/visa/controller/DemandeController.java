@@ -322,9 +322,9 @@ public class DemandeController {
     public String editDemande(@RequestParam("id") Integer demandeId, Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            if (!demandeService.canEditDemandeByTypeStatutDemande(demandeId)) {
+            if (!demandeService.canOpenModifierPageByTypeStatutDemande(demandeId)) {
                 redirectAttributes.addFlashAttribute("errorMessage",
-                        "Modification interdite: le type_statut_demande doit etre egal a 1.");
+                        "Modification interdite: le type_statut_demande doit etre egal a 1 ou 2.");
                 return "redirect:/demandes";
             }
 
@@ -349,6 +349,7 @@ public class DemandeController {
             model.addAttribute("nationalites", nationaliteService.getNationalites());
             model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
             model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
+            model.addAttribute("isScanTermine", demandeService.isScanTermineByTypeStatutDemandeId(demandeId));
 
             return renderPage(model, "Modifier demande", "demande/modifier-demande.jsp", "demande-form");
         } catch (BusinessValidationException exception) {

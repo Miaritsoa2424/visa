@@ -30,7 +30,7 @@ VALUES
 INSERT INTO type_statut_demande (id, libelle)
 VALUES
 	('1', 'Cree'),
-	('2', 'Scanee'),
+	('2', 'Scan termine'),
 	('3', 'Visa validee');
 INSERT INTO type_statut_visa (id, libelle, rang)
 VALUES
