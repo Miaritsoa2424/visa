@@ -25,7 +25,8 @@ INSERT INTO type_demande (libelle)
 VALUES
 	('Nouveau titre'),
 	('Renouvellement'),
-	('Duplicata');
+	('Duplicata'),
+    ('Transfert de visa');
 INSERT INTO type_statut_demande (id, libelle)
 VALUES
 	('1', 'Cree'),
