@@ -1,11 +1,5 @@
 package com.visa.controller;
 
-import com.visa.entity.Personne;
-import com.visa.entity.Visa;
-import com.visa.repository.PaysRepository;
-import com.visa.repository.PersonneRepository;
-import com.visa.repository.VisaRepository;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,8 +19,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.visa.dto.CreateDemandeDTO;
 import com.visa.entity.ChampFournir;
 import com.visa.entity.Demande;
+import com.visa.entity.Personne;
 import com.visa.entity.TypeDemande;
+import com.visa.entity.Visa;
 import com.visa.exception.BusinessValidationException;
+import com.visa.repository.PaysRepository;
+import com.visa.repository.PersonneRepository;
+import com.visa.repository.VisaRepository;
 import com.visa.service.ChampFournirService;
 import com.visa.service.DemandeService;
 import com.visa.service.NationaliteService;
@@ -34,7 +33,6 @@ import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;
 import com.visa.service.TypeVisaService;
 import com.visa.service.UtilService;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @Controller
