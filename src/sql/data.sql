@@ -106,3 +106,11 @@ VALUES
 	('2026-03-10', '1', 3),
 	('2026-03-20', '2', 4),
 	('2026-04-05', '1', 5);
+
+
+-- 28-04-2026: Miaritsoa
+INSERT INTO statut_dossier_pro (libelle)
+VALUES
+    ('Non coche'),
+    ('Coche'),
+    ('Scanne');
