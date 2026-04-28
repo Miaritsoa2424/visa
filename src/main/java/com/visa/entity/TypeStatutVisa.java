@@ -2,6 +2,8 @@ package com.visa.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -9,9 +11,10 @@ import jakarta.persistence.Table;
 @Table(name = "type_statut_visa")
 public class TypeStatutVisa {
 
+    
     @Id
-    @Column(length = 30)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(nullable = false, length = 50)
     private String libelle;
@@ -22,17 +25,17 @@ public class TypeStatutVisa {
     public TypeStatutVisa() {
     }
 
-    public TypeStatutVisa(String id, String libelle, Integer rang) {
+    public TypeStatutVisa(Integer id, String libelle, Integer rang) {
         this.id = id;
         this.libelle = libelle;
         this.rang = rang;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

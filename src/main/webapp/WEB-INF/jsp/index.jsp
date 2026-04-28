@@ -16,6 +16,9 @@
                         <a class="type-link" href="/demande/nouvelle?typeDemandeId=${typeDemande.id}">${typeDemande.libelle}</a>
                     </li>
                 </c:forEach>
+                <li>
+                    <a class="type-link" href="/demande/transfert-form-sans-donnee">Transfert sans données</a>
+                </li>
             </ul>
         </c:when>
         <c:otherwise>
