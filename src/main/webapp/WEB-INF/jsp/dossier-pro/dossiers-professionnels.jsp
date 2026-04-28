@@ -94,7 +94,7 @@
     <div class="upload-modal-body">
         <p class="upload-subtitle">Dossier professionnel #<span id="selectedDossierId">-</span></p>
 
-        <form id="uploadForm" class="upload-form" action="#" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" class="upload-form" action="/dossier-pro/scanner" method="post" enctype="multipart/form-data">
             <input type="hidden" id="selectedDossierIdInput" name="dossierProfessionnelId" value="">
 
             <div id="fileInputsContainer" class="file-inputs-container">
@@ -106,7 +106,7 @@
 
             <div class="upload-actions">
                 <button type="button" class="btn btn-secondary" id="addFileInputBtn">Ajouter un autre champ de fichiers</button>
-                <button type="submit" class="btn btn-primary">Valider (front-end)</button>
+                <button type="submit" class="btn btn-primary">Uploader</button>
             </div>
         </form>
     </div>
@@ -160,9 +160,8 @@
             fileInputsContainer.appendChild(row);
         });
 
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-            closeModal();
+        form.addEventListener('submit', function () {
+            document.body.classList.remove('modal-open');
         });
     })();
 </script>
