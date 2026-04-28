@@ -189,6 +189,110 @@ body {
     color: #1e3a8a;
 }
 
+body.modal-open {
+    overflow: hidden;
+}
+
+.upload-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 900;
+}
+
+.upload-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(680px, calc(100vw - 32px));
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24);
+    z-index: 901;
+}
+
+.upload-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.upload-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #1e3a8a;
+}
+
+.upload-close-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: #334155;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.upload-close-btn:hover {
+    background: #f8fafc;
+}
+
+.upload-modal-body {
+    padding: 20px;
+}
+
+.upload-subtitle {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.upload-form {
+    display: grid;
+    gap: 14px;
+}
+
+.file-inputs-container {
+    display: grid;
+    gap: 10px;
+}
+
+.file-input-row {
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fcfdff;
+}
+
+.file-input-row label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.file-input-row input[type="file"] {
+    width: 100%;
+}
+
+.upload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
 @media (max-width: 900px) {
     .page {
         padding: 20px 14px 28px;
@@ -213,6 +317,14 @@ body {
     }
 
     .form-actions .btn {
+        width: 100%;
+    }
+
+    .upload-actions {
+        justify-content: stretch;
+    }
+
+    .upload-actions .btn {
         width: 100%;
     }
 }

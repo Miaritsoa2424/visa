@@ -66,7 +66,11 @@
                                 </c:choose>
                             </td>
                             <td>
-                                <a class="btn btn-primary btn-scanner" href="/dossier-pro/scanner?id=${dossier.dossierProfessionnelId}">Scanner</a>
+                                <button class="btn btn-primary btn-scanner js-open-upload-modal"
+                                        type="button"
+                                        data-dossier-id="${dossier.dossierProfessionnelId}">
+                                    Scanner
+                                </button>
                             </td>
                         </tr>
                     </c:forEach>
@@ -79,3 +83,86 @@
         </c:choose>
     </div>
 </div>
+
+<div class="upload-modal-backdrop" id="uploadModalBackdrop" hidden></div>
+<div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle" hidden>
+    <div class="upload-modal-header">
+        <h2 id="uploadModalTitle">Upload des fichiers du dossier pro</h2>
+        <button type="button" class="upload-close-btn" id="uploadModalCloseBtn" aria-label="Fermer">&times;</button>
+    </div>
+
+    <div class="upload-modal-body">
+        <p class="upload-subtitle">Dossier professionnel #<span id="selectedDossierId">-</span></p>
+
+        <form id="uploadForm" class="upload-form" action="#" method="post" enctype="multipart/form-data">
+            <input type="hidden" id="selectedDossierIdInput" name="dossierProfessionnelId" value="">
+
+            <div id="fileInputsContainer" class="file-inputs-container">
+                <div class="file-input-row">
+                    <label>Fichiers</label>
+                    <input type="file" name="fichiers" multiple>
+                </div>
+            </div>
+
+            <div class="upload-actions">
+                <button type="button" class="btn btn-secondary" id="addFileInputBtn">Ajouter un autre champ de fichiers</button>
+                <button type="submit" class="btn btn-primary">Valider (front-end)</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const openButtons = document.querySelectorAll('.js-open-upload-modal');
+        const modal = document.getElementById('uploadModal');
+        const backdrop = document.getElementById('uploadModalBackdrop');
+        const closeBtn = document.getElementById('uploadModalCloseBtn');
+        const dossierIdText = document.getElementById('selectedDossierId');
+        const dossierIdInput = document.getElementById('selectedDossierIdInput');
+        const form = document.getElementById('uploadForm');
+        const addFileInputBtn = document.getElementById('addFileInputBtn');
+        const fileInputsContainer = document.getElementById('fileInputsContainer');
+
+        function openModal(dossierId) {
+            dossierIdText.textContent = dossierId || '-';
+            dossierIdInput.value = dossierId || '';
+            modal.hidden = false;
+            backdrop.hidden = false;
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            modal.hidden = true;
+            backdrop.hidden = true;
+            document.body.classList.remove('modal-open');
+        }
+
+        openButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                openModal(button.dataset.dossierId);
+            });
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        backdrop.addEventListener('click', closeModal);
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !modal.hidden) {
+                closeModal();
+            }
+        });
+
+        addFileInputBtn.addEventListener('click', function () {
+            const row = document.createElement('div');
+            row.className = 'file-input-row';
+            row.innerHTML = '<label>Fichiers</label><input type="file" name="fichiers" multiple>';
+            fileInputsContainer.appendChild(row);
+        });
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            closeModal();
+        });
+    })();
+</script>
