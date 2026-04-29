@@ -1,0 +1,334 @@
+:root {
+    --bg: #eef2f7;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #64748b;
+    --border: #d9e2ec;
+    --accent: #3b82f6;
+    --accent-soft: #dbeafe;
+    --accent-dark: #2563eb;
+    --success-bg: #ecfdf5;
+    --success-text: #047857;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(180deg, #eef2f7 0%, #f7f9fc 100%);
+    color: var(--text);
+}
+
+.page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 20px 48px;
+}
+
+.header {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 28px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    margin: 0 0 8px;
+    font-size: 30px;
+}
+
+.header p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.top-actions {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.inline-form {
+    margin: 0;
+}
+
+.dossier-pro-table th,
+.dossier-pro-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.dossier-pro-table th {
+    background: linear-gradient(90deg, #f8fbff 0%, #ffffff 100%);
+    color: #1e3a8a;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dossier-pro-table tr:hover {
+    background-color: #f8fbff;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.22);
+}
+
+.btn-primary:hover {
+    background: var(--accent-dark);
+}
+
+.btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-scanner {
+    min-width: auto;
+    margin: 0;
+    padding: 8px 13px;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: var(--success-bg);
+    color: var(--success-text);
+    font-weight: 700;
+    border: 1px solid #bbf7d0;
+}
+
+.status-pill.status-unknown {
+    background: #f8fafc;
+    color: var(--muted);
+    border-color: var(--border);
+}
+
+.empty-message {
+    text-align: center;
+    padding: 22px;
+    color: var(--muted);
+    background-color: #fafcff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.alert {
+    padding: 16px 18px;
+    border-radius: 12px;
+    border-left: 4px solid;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.alert strong {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.alert-success {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1e3a8a;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.upload-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 900;
+}
+
+.upload-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(680px, calc(100vw - 32px));
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24);
+    z-index: 901;
+}
+
+.upload-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.upload-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #1e3a8a;
+}
+
+.upload-close-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: #334155;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.upload-close-btn:hover {
+    background: #f8fafc;
+}
+
+.upload-modal-body {
+    padding: 20px;
+}
+
+.upload-subtitle {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.upload-form {
+    display: grid;
+    gap: 14px;
+}
+
+.file-inputs-container {
+    display: grid;
+    gap: 10px;
+}
+
+.file-input-row {
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fcfdff;
+}
+
+.file-input-row label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.file-input-row input[type="file"] {
+    width: 100%;
+}
+
+.upload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+    .page {
+        padding: 20px 14px 28px;
+    }
+
+    .header {
+        padding: 18px;
+    }
+
+    .form-card {
+        padding: 16px;
+    }
+
+    .dossier-pro-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .form-actions {
+        justify-content: stretch;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    .upload-actions {
+        justify-content: stretch;
+    }
+
+    .upload-actions .btn {
+        width: 100%;
+    }
+}
