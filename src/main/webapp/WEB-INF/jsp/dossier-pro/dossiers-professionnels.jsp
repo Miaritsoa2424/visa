@@ -114,6 +114,8 @@
                 </div>
             </div>
 
+            <input type="hidden" name="demandeId" value="${demandeId}">
+
             <div class="upload-actions">
                 <button type="button" class="btn btn-secondary" id="addFileInputBtn">Ajouter un autre champ de fichiers</button>
                 <button type="submit" class="btn btn-primary">Uploader</button>
