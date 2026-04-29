@@ -34,6 +34,7 @@ public class DossierProController {
 
     @PostMapping("/dossier-pro/scanner")
     public String scannerDossier(@RequestParam("dossierProfessionnelId") Integer dossierProfessionnelId,
+            @RequestParam("demandeId") Integer demandeId,
             @RequestParam(value = "fichiers", required = false) MultipartFile[] fichiers,
             RedirectAttributes redirectAttributes) {
         try {
@@ -49,7 +50,7 @@ public class DossierProController {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Erreur lors de l'upload: " + exception.getMessage());
         }
-        return "redirect:/dossier-pro";
+        return "redirect:/dossier-pro?demandeId=" + demandeId;
     }
 
     @PostMapping("/dossier-pro/terminer-scan")
@@ -65,7 +66,7 @@ public class DossierProController {
             redirectAttributes.addFlashAttribute("errorMessage",
                     "Erreur lors de la finalisation du scan: " + exception.getMessage());
         }
-        return "redirect:/dossier-pro";
+        return "redirect:/dossier-pro?demandeId=" + demandeId;
     }
 
     private String renderPage(Model model, String pageTitle, String contentPage, String pageStyle) {
