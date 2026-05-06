@@ -32,7 +32,6 @@ import com.visa.repository.VisaRepository;
 import com.visa.service.ChampFournirService;
 import com.visa.service.DemandeService;
 import com.visa.service.NationaliteService;
-import com.visa.service.QrCodeService;
 import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;
 import com.visa.service.TypeVisaService;
@@ -54,8 +53,6 @@ public class DemandeController {
 
     @Autowired
     private DemandeService demandeService;
-    @Autowired
-    private QrCodeService qrCodeService;
     @Autowired
     private NationaliteService nationaliteService;
     @Autowired
@@ -432,16 +429,6 @@ public class DemandeController {
 
         try {
             var demandeCreee = demandeService.createDemande(dto);
-            
-            // Générer et stocker le QR Code
-            try {
-                byte[] qrCodeBytes = qrCodeService.generateQrCodeBytes(demandeCreee.getId());
-                demandeCreee.setQrcode(qrCodeBytes);
-                demandeRepository.save(demandeCreee);
-            } catch (Exception e) {
-                // Log l'erreur mais ne pas bloquer la création de la demande
-                System.err.println("Erreur lors de la génération du QR Code: " + e.getMessage());
-            }
             
             model.addAttribute("demande", demandeCreee);
             model.addAttribute("dto", dto);

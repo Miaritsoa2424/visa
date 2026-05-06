@@ -88,6 +88,8 @@ public class DemandeService {
     private TypeStatutVisaRepository typeStatutVisaRepository;
     @Autowired
     private StatutVisaRepository statutVisaRepository;
+    @Autowired
+    private QrCodeService qrCodeService;
 
     DemandeService(PaysRepository paysRepository) {
         this.paysRepository = paysRepository;
@@ -225,6 +227,9 @@ public class DemandeService {
 
             saveDossierProfessionnels(dto, demande);
 
+            // Générer et sauvegarder le QR Code
+            generateAndSaveQrCode(demande);
+
             return demande;
         } catch (BusinessValidationException exception) {
             throw exception;
@@ -330,6 +335,9 @@ public class DemandeService {
 
             dossierProfessionnelRepository.deleteByDemandeId(demandeId);
             saveDossierProfessionnels(dto, demande);
+
+            // Générer et sauvegarder le QR Code
+            generateAndSaveQrCode(demande);
 
             return demande;
         } catch (BusinessValidationException exception) {
@@ -636,6 +644,9 @@ public class DemandeService {
 
             createInitialStatutDemande(demande);
 
+            // Générer et sauvegarder le QR Code
+            generateAndSaveQrCode(demande);
+
             // Creation du statut de la demande
             StatutDemande statutDemande = new StatutDemande();
             TypeStatutDemande typeStatutDemande = typeStatutDemandeRepository.findById("3")
@@ -679,6 +690,9 @@ public class DemandeService {
 
             createInitialStatutDemande(demandeDuplicata);
 
+            // Générer et sauvegarder le QR Code
+            generateAndSaveQrCode(demandeDuplicata);
+
             HistoriquePasseportVisa historiquePasseportVisa2 = new HistoriquePasseportVisa();
             historiquePasseportVisa2.setDateHistorique(LocalDate.now());
             historiquePasseportVisa2.setPasseport(passeportTarget);
@@ -686,6 +700,22 @@ public class DemandeService {
             historiquePasseportVisaRepository.save(historiquePasseportVisa2);
         } catch (BusinessValidationException e) {
             throw e;
+        }
+    }
+
+    /**
+     * Génère et sauvegarde le QR Code pour une demande
+     * 
+     * @param demande La demande pour laquelle générer le QR Code
+     */
+    private void generateAndSaveQrCode(Demande demande) {
+        try {
+            byte[] qrCodeBytes = qrCodeService.generateQrCodeBytes(demande.getId());
+            demande.setQrcode(qrCodeBytes);
+            demandeRepository.save(demande);
+        } catch (Exception e) {
+            // Log l'erreur mais ne pas bloquer l'opération principale
+            System.err.println("Erreur lors de la génération du QR Code pour la demande #" + demande.getId() + ": " + e.getMessage());
         }
     }
 }
