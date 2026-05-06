@@ -15,6 +15,10 @@ VALUES
 	('Senegalaise'),
 	('Italienne'),
 	('Chinoise');
+
+	INSERT INTO nationalite (libelle)
+VALUES
+	('Japonaise');
 INSERT INTO pays (libelle)
 VALUES
 	('Madagascar'),
@@ -114,3 +118,4 @@ VALUES
     ('Non coche'),
     ('Coche'),
     ('Scanne');
+

@@ -31,8 +31,8 @@ public class QrCodeService {
      * @throws IOException Si la conversion en PNG échoue
      */
     public byte[] generateQrCodeBytes(Integer demandeId) throws WriterException, IOException {
-        // URL vers l'application Vue à la page d'accueil avec l'ID de la demande
-        String donnees = vueAppUrl + "/?demandeId=" + demandeId;
+        // URL vers l'application Vue avec le numéro de demande directement exploitable
+        String donnees = vueAppUrl + "/?recherche=DEM-" + demandeId;
 
         // Génération du QR Code avec zxing
         QRCodeWriter writer = new QRCodeWriter();
