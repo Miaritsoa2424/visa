@@ -17,6 +17,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.visa.dto.DossierProfessionnelStatutDTO;
 import com.visa.dto.StatutDossierProDTO;
@@ -37,6 +39,7 @@ import com.visa.repository.TypeStatutDemandeRepository;
 
 @Service
 public class DossierProfessionnelService {
+	private static final Logger log = LoggerFactory.getLogger(DossierProfessionnelService.class);
 
 	private static final String TYPE_STATUT_DEMANDE_SCAN_TERMINE_ID = "2";
 	private static final String STATUT_DOSSIER_PRO_SCANNE_LIBELLE = "Scanne";
@@ -135,8 +138,9 @@ public class DossierProfessionnelService {
 				fichierUploadeRepository.save(fichierUploade);
 				fichiersEnregistres++;
 			} catch (DataIntegrityViolationException exception) {
+				log.error("Erreur lors de l'enregistrement du fichier uploadé en base", exception);
 				throw new BusinessValidationException(
-						"Erreur lors de l'enregistrement du fichier uploadé en base: " + exception.getMostSpecificCause().getMessage());
+						"Un fichier avec les memes informations existe deja ou ne respecte pas les contraintes attendues.");
 			}
 		}
 
@@ -197,20 +201,6 @@ public class DossierProfessionnelService {
 		statutDemande.setTypeStatutDemande(typeStatutDemande);
 		statutDemande.setDateStatut(java.time.LocalDate.now());
 		statutDemandeRepository.save(statutDemande);
-	}
-
-	private void insererStatutDossierProScanne(List<DossierProfessionnel> dossiersProfessionnels) {
-		StatutDossierPro statutDossierPro = statutDossierProRepository
-				.findFirstByLibelleIgnoreCase(STATUT_DOSSIER_PRO_SCANNE_LIBELLE)
-				.orElseThrow(() -> new BusinessValidationException(
-						"Statut dossier professionnel 'Scanne' non trouve."));
-
-		for (DossierProfessionnel dossierProfessionnel : dossiersProfessionnels) {
-			DossierProStatut dossierProStatut = new DossierProStatut();
-			dossierProStatut.setDossierProfessionnel(dossierProfessionnel);
-			dossierProStatut.setStatutDossierPro(statutDossierPro);
-			dossierProStatutRepository.save(dossierProStatut);
-		}
 	}
 
     @Transactional(readOnly = true)

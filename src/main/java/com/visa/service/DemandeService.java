@@ -15,6 +15,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.visa.dto.CreateDemandeDTO;
 import com.visa.entity.ChampFournir;
@@ -53,6 +55,8 @@ import com.visa.repository.VisaTransformableRepository;
 
 @Service
 public class DemandeService {
+    private static final Logger log = LoggerFactory.getLogger(DemandeService.class);
+
     private final PaysRepository paysRepository;
     @Autowired
     private DemandeRepository demandeRepository;
@@ -234,14 +238,19 @@ public class DemandeService {
         } catch (BusinessValidationException exception) {
             throw exception;
         } catch (IncorrectResultSizeDataAccessException exception) {
+            log.error("Erreur de taille de resultat lors de la creation de la demande", exception);
             throw new BusinessValidationException(
-                    "Plusieurs enregistrements identiques existent deja en base pour cette valeur. Merci de contacter l'administration pour nettoyer les doublons.");
+                "Plusieurs enregistrements correspondent deja a ces informations. Veuillez verifier les donnees saisies.");
         } catch (DataIntegrityViolationException exception) {
-            throw new BusinessValidationException(
-                    "Violation de contrainte en base de donnees: " + exception.getMostSpecificCause().getMessage());
+            log.error("Contrainte en base lors de la creation de la demande", exception);
+            throw buildFriendlyPersistenceException(exception,
+                "Impossible de creer la demande car certaines informations existent deja ou ne respectent pas les contraintes.",
+                "Le numero du passeport existe deja.",
+                "Le numero du visa transformable existe deja.");
         } catch (RuntimeException exception) {
+            log.error("Erreur inattendue lors de la creation de la demande", exception);
             throw new BusinessValidationException(
-                    "Erreur metier lors de la creation de la demande: " + exception.getMessage());
+                "Une erreur inattendue est survenue lors de la creation de la demande.");
         }
     }
 
@@ -343,14 +352,19 @@ public class DemandeService {
         } catch (BusinessValidationException exception) {
             throw exception;
         } catch (IncorrectResultSizeDataAccessException exception) {
+            log.error("Erreur de taille de resultat lors de la modification de la demande", exception);
             throw new BusinessValidationException(
-                    "Plusieurs enregistrements identiques existent deja en base pour cette valeur. Merci de contacter l'administration pour nettoyer les doublons.");
+                "Plusieurs enregistrements correspondent deja a ces informations. Veuillez verifier les donnees saisies.");
         } catch (DataIntegrityViolationException exception) {
-            throw new BusinessValidationException(
-                    "Violation de contrainte en base de donnees: " + exception.getMostSpecificCause().getMessage());
+            log.error("Contrainte en base lors de la modification de la demande", exception);
+            throw buildFriendlyPersistenceException(exception,
+                "Impossible de modifier la demande car certaines informations existent deja ou ne respectent pas les contraintes.",
+                "Le numero du passeport existe deja.",
+                "Le numero du visa transformable existe deja.");
         } catch (RuntimeException exception) {
+            log.error("Erreur inattendue lors de la modification de la demande", exception);
             throw new BusinessValidationException(
-                    "Erreur metier lors de la modification de la demande: " + exception.getMessage());
+                "Une erreur inattendue est survenue lors de la modification de la demande.");
         }
     }
 
@@ -700,7 +714,38 @@ public class DemandeService {
             historiquePasseportVisaRepository.save(historiquePasseportVisa2);
         } catch (BusinessValidationException e) {
             throw e;
+        } catch (IncorrectResultSizeDataAccessException exception) {
+            log.error("Erreur de taille de resultat lors du transfert de visa", exception);
+            throw new BusinessValidationException(
+                    "Plusieurs enregistrements correspondent deja a ces informations. Veuillez verifier les donnees saisies.");
+        } catch (DataIntegrityViolationException exception) {
+            log.error("Contrainte en base lors du transfert de visa", exception);
+            throw buildFriendlyPersistenceException(exception,
+                    "Impossible de transferer le visa car certaines informations existent deja ou ne respectent pas les contraintes.",
+                    "Le numero du passeport existe deja.",
+                    "Le numero du visa transformable existe deja.");
+        } catch (RuntimeException exception) {
+            log.error("Erreur inattendue lors du transfert de visa", exception);
+            throw new BusinessValidationException(
+                    "Une erreur inattendue est survenue lors du transfert de visa.");
         }
+    }
+
+    private BusinessValidationException buildFriendlyPersistenceException(DataIntegrityViolationException exception,
+            String defaultMessage, String passportMessage, String visaTransformableMessage) {
+        String technicalMessage = exception.getMostSpecificCause() == null
+                ? exception.getMessage()
+                : exception.getMostSpecificCause().getMessage();
+        String normalizedMessage = technicalMessage == null ? "" : technicalMessage.toLowerCase();
+
+        if (normalizedMessage.contains("passeport")) {
+            return new BusinessValidationException(passportMessage);
+        }
+        if (normalizedMessage.contains("visa_transformable") || normalizedMessage.contains("visa transformable")) {
+            return new BusinessValidationException(visaTransformableMessage);
+        }
+
+        return new BusinessValidationException(defaultMessage);
     }
 
     /**
