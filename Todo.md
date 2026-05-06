@@ -76,8 +76,89 @@
 		- [ ] visa source introuvable
 		- [ ] visa source non transferables (expire, annule, etc.)
 
+# Sprint 3
+
+### Description :
+Scan / Upload des fichiers pour les dossiers professionnels (workflow de scan et marquage)
+
+### Repartition :
+
+#### Ny Ando (Backend)
+1. Branche : sprint3/1/scan-upload-backend
+2. Taches:
+	- [ ] Ajouter une table `statut_dossier_pro` (id, libelle) dans les scripts SQL
+	- [ ] Ajouter une table `historique_statut_dossier_pro` (id, id_statut_dossier_pro FK, id_dossier_pro FK)
+	- [ ] Donnees initiales dans `statut_dossier_pro`: Non coché, Coché, Scanné
+	- [ ] Creer la table `fichier_uploade` (id, valeur, dossier_professionnel_id FK) dans les scripts SQL
+	- [ ] Ajouter l'entite JPA `FichierUploade` et le `FichierUploadeRepository`
+	- [ ] Ajouter l'entite JPA `StatutDossierPro` et le `StatutDossierProRepository`
+	- [ ] Ajouter l'entite JPA `HistoriqueStatutDossierPro` et le `HistoriqueStatutDossierProRepository`
+	- [ ] Mettre a jour les donnees de test (data.sql) avec les nouveaux statuts
+
+#### Miaritsoa (Frontend / Controller)
+1. Branche : sprint3/2/scan-upload-frontend
+2. Taches:
+	- [ ] Afficher les champs a fournir dans la fiche demande
+	- [ ] Ajouter un statut "Scan termine" dans `type_statut_demande` et mettre a jour data.sql
+	- [ ] Dans la page Modifier, afficher:
+		- [ ] Un bouton "Scanner les fichiers" si statut != "Scan termine"
+		- [ ] Le texte "Fichier deja uploade" si statut == "Scan termine"
+	- [ ] Creer la page `upload-pieces-justificatif.jsp` avec champs d'upload dynamiques
+	- [ ] La page affiche les champs d'upload en fonction du nombre de `dossier_professionnel`
+	- [ ] Validation: on peut uploader seulement si le statut du dossier est "Coché"
+	- [ ] Implementer un service pour sauvegarder les metadonnees d'upload:
+		- [ ] Copier le fichier dans `assets/`
+		- [ ] Inserer dans la table `fichier_uploades`
+		- [ ] Mettre a jour le statut du dossier professionnel
+	- [ ] Creer l'endpoint d'upload (multipart) et tester
+	- [ ] A reussite, rediriger et afficher le statut mis a jour
+	- [ ] Validations: types de fichiers autorises, taille max, verification du lien dossier_professionnel
+
+3. Deadline : A definir
 
 
- 
- 
- 
+# Sprint 4
+
+### Description :
+Generation de QR Code et integration de l'application Vue pour consultation des demandes
+
+### Repartition :
+
+#### Elyance (Backend API)
+1. Branche : sprint4/1/generation-qrcode
+2. Taches:
+	- [x] Generer un QRCode a la creation de la demande
+	- [x] Afficher le QRCode dans la page demande-confirmation
+	- [x] Afficher le QRCode dans la page demande-fiche
+	- [ ] Creer l'API `/api/getDemandes?ref=...`:
+		- [ ] Fonction `getByNumPasseportOrNumDemande(string reference)` retourne `List<Demande>`
+		- [ ] Parametres: numero passeport OU numero de demande
+		- [ ] Resultat: liste des demandes associees
+	- [ ] Creer l'API `/api/getObjectById?ref=...`:
+		- [ ] Fonction `getPasseportOrDemandeById(string reference)`
+		- [ ] Retourne: `objet: passeport/demande, data: json de l'objet`
+		- [ ] Determiner si c'est un passeport ou une demande
+	- [ ] A la lecture du QRCode: rediriger vers l'application Vue avec les donnees
+
+3. Deadline : A definir
+
+#### Ny Ando (Frontend Vue)
+1. Partie I - Setup du repository Vue
+	- [ ] Creer un nouveau repository GitHub: `visa-vue`
+	- [ ] Initialiser le projet Vue (branche: master)
+
+2. Branche : sprint4/2/recherche-demande
+3. Taches:
+	- [ ] Creer une page de recherche avec:
+		- [ ] Label: "Entrez votre numero de passeport ou votre numero de demande"
+		- [ ] Champ de texte pour l'input
+		- [ ] Bouton Submit
+	- [ ] Creer une page de resultats qui affiche:
+		- [ ] Apres recherche par demande: la demande concernee (mise en avant) + liste des autres demandes du meme demandeur
+		- [ ] Apres recherche par passeport: liste des demandes du proprietaire de ce passeport
+		- [ ] Afficher l'historique et les statuts des demandes
+	- [ ] Creer un component `ListeDemandes` reutilisable pour afficher la liste
+	- [ ] Integrer les appels aux APIs du backend Java
+	- [ ] Tester la lecture de QR Code et la redirection
+
+4. Deadline : A definir
