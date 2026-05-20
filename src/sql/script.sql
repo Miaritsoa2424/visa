@@ -159,3 +159,5 @@ CREATE TABLE historique_passeport_visa(
    FOREIGN KEY(visa_id) REFERENCES visa(id),
    FOREIGN KEY(passeport_id) REFERENCES passeport(id)
 );
+
+ALTER TABLE demande ADD COLUMN qrcode BYTEA;

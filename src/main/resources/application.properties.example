@@ -15,3 +15,6 @@ spring.devtools.livereload.enabled=true
 
 spring.mvc.view.prefix=/WEB-INF/jsp/
 spring.mvc.view.suffix=.jsp
+
+# Vue Application URL (pour mobile, utiliser l'IP de la machine: http://192.168.x.x:5173)
+app.vue.url=http://10.233.120.140:5173

@@ -36,6 +36,9 @@ public class Demande {
     @JoinColumn(name = "type_demande_id", nullable = false)
     private TypeDemande typeDemande;
 
+    @Column(name = "qrcode")
+    private byte[] qrcode;
+
     public Demande() {
     }
 
@@ -85,6 +88,14 @@ public class Demande {
 
     public void setTypeDemande(TypeDemande typeDemande) {
         this.typeDemande = typeDemande;
+    }
+
+    public byte[] getQrcode() {
+        return qrcode;
+    }
+
+    public void setQrcode(byte[] qrcode) {
+        this.qrcode = qrcode;
     }
 
     public void validateRequiredFields() {

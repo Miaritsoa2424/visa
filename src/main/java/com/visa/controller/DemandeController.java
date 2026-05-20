@@ -8,9 +8,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -43,6 +46,8 @@ public class DemandeController {
     private VisaRepository visaRepository;
     @Autowired
     private PaysRepository paysRepository;
+    @Autowired
+    private com.visa.repository.DemandeRepository demandeRepository;
 
     private static final Integer TRANSFERT_TYPE_DEMANDE_ID = 4;
 
@@ -375,6 +380,21 @@ public class DemandeController {
         return response;
     }
 
+    @GetMapping("/qrcode/{demandeId}")
+    public ResponseEntity<byte[]> getQrCode(@PathVariable Integer demandeId) {
+        try {
+            Demande demande = demandeService.getDemandeById(demandeId);
+            if (demande == null || demande.getQrcode() == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(demande.getQrcode());
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping("/demande/creer")
     public String createDemande(@RequestParam Map<String, String> formValues,
             @RequestParam(name = "champFournirIds", required = false) List<Integer> champFournirIds,
@@ -409,6 +429,7 @@ public class DemandeController {
 
         try {
             var demandeCreee = demandeService.createDemande(dto);
+            
             model.addAttribute("demande", demandeCreee);
             model.addAttribute("dto", dto);
             model.addAttribute("statutInitial", "Cree");

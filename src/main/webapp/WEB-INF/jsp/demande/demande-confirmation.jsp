@@ -114,6 +114,19 @@
         </div>
 
         <div class="card">
+            <h2>Code QR</h2>
+            <div class="summary" style="text-align: center;">
+                <c:if test="${demande != null && demande.id != null}">
+                    <img src="/qrcode/${demande.id}" alt="QR Code de la demande" style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 10px;" />
+                    <p style="margin-top: 10px; color: #666;">Scannez ce code pour consulter votre demande</p>
+                </c:if>
+                <c:if test="${demande == null || demande.id == null}">
+                    <p>Le QR Code n'est pas disponible pour cette demande.</p>
+                </c:if>
+            </div>
+        </div>
+
+        <div class="card">
             <h2>Action</h2>
             <div class="actions">
                 <a class="btn btn-primary" href="/demandes">Voir la liste des demandes</a>
