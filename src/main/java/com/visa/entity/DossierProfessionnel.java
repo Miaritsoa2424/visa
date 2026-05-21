@@ -24,8 +24,8 @@ public class DossierProfessionnel {
     @JoinColumn(name = "demande_id", nullable = false)
     private Demande demande;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "champ_fournir_id", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "champ_fournir_id", nullable = true)
     private ChampFournir champFournir;
 
     public DossierProfessionnel() {

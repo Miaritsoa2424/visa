@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -120,68 +121,105 @@ public class DemandeService {
     }
 
     public List<Map<String, Object>> getChampsFournirWithStatus(Integer demandeId) {
-        Demande demande = getDemandeById(demandeId);
-        if (demande.getTypeVisa() == null) {
-            return new ArrayList<>();
-        }
 
-        List<ChampFournir> champsRequis = champFournirRepository.findByTypeVisaId(demande.getTypeVisa().getId());
-        List<DossierProfessionnel> dossiersFournis = dossierProfessionnelRepository.findByDemandeId(demandeId);
-        
-        Set<Integer> champFournirIdsFournis = dossiersFournis.stream()
-                .map(d -> d.getChampFournir().getId())
-                .collect(Collectors.toSet());
+    Demande demande = getDemandeById(demandeId);
 
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (ChampFournir champ : champsRequis) {
-            Map<String, Object> champMap = new HashMap<>();
-            champMap.put("id", champ.getId());
-            champMap.put("libelle", champ.getLibelle());
-            champMap.put("typeDonnee", champ.getTypeDonnee());
-            champMap.put("isFourni", champFournirIdsFournis.contains(champ.getId()));
-            
-            DossierProfessionnel dossier = dossiersFournis.stream()
-                    .filter(d -> d.getChampFournir().getId().equals(champ.getId()))
-                    .findFirst()
-                    .orElse(null);
-            champMap.put("valeur", dossier != null ? dossier.getValeur() : null);
-            
-            result.add(champMap);
-        }
-        return result;
+    if (demande.getTypeVisa() == null) {
+        return new ArrayList<>();
     }
+
+    List<ChampFournir> champsRequis =
+            champFournirRepository.findByTypeVisaId(
+                    demande.getTypeVisa().getId()
+            );
+
+    List<DossierProfessionnel> dossiersFournis =
+            dossierProfessionnelRepository.findByDemandeId(demandeId);
+
+    Set<Integer> champFournirIdsFournis = dossiersFournis.stream()
+            .map(DossierProfessionnel::getChampFournir)
+            .filter(Objects::nonNull)
+            .map(ChampFournir::getId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+    List<Map<String, Object>> result = new ArrayList<>();
+
+    for (ChampFournir champ : champsRequis) {
+
+        Map<String, Object> champMap = new HashMap<>();
+
+        champMap.put("id", champ.getId());
+        champMap.put("libelle", champ.getLibelle());
+        champMap.put("typeDonnee", champ.getTypeDonnee());
+
+        champMap.put(
+                "isFourni",
+                champFournirIdsFournis.contains(champ.getId())
+        );
+
+        DossierProfessionnel dossier = dossiersFournis.stream()
+                .filter(d ->
+                        d.getChampFournir() != null &&
+                        d.getChampFournir().getId() != null &&
+                        d.getChampFournir().getId().equals(champ.getId())
+                )
+                .findFirst()
+                .orElse(null);
+
+        champMap.put(
+                "valeur",
+                dossier != null ? dossier.getValeur() : null
+        );
+
+        result.add(champMap);
+    }
+
+    return result;
+}
 
     public VisaTransformable getVisaTransformableByPersonneId(Integer personneId) {
         return visaTransformableRepository.findFirstByPersonneIdOrderByIdAsc(personneId).orElse(null);
     }
 
     public boolean canEditDemandeByTypeStatutDemande(Integer demandeId) {
-        StatutDemande statutDemande = statutDemandeRepository
-                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
-                .orElse(null);
+        StatutDemande statutDemande = getLatestStatutDemande(demandeId);
         if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
             return false;
         }
 
-        return "1".equals(statutDemande.getTypeStatutDemande().getId());
+        return "1".equals(statutDemande.getTypeStatutDemande().getId()) || "2".equals(statutDemande.getTypeStatutDemande().getId());
+        // return true;
+    }
+
+    public String getStatutDemandeLibelle(Integer demandeId) {
+        StatutDemande statutDemande = getLatestStatutDemande(demandeId);
+        if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
+            return "Inconnu";
+        }
+
+        String libelle = statutDemande.getTypeStatutDemande().getLibelle();
+        return libelle == null || libelle.isBlank() ? "Inconnu" : libelle;
+    }
+
+    private StatutDemande getLatestStatutDemande(Integer demandeId) {
+        return statutDemandeRepository.findByDemandeIdOrderByDateAndId(
+                demandeId,
+                PageRequest.of(0, 1)
+        ).stream().findFirst().orElse(null);
     }
 
     public boolean canOpenModifierPageByTypeStatutDemande(Integer demandeId) {
-        StatutDemande statutDemande = statutDemandeRepository
-                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
-                .orElse(null);
+        StatutDemande statutDemande = getLatestStatutDemande(demandeId);
         if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
             return false;
         }
 
-        String typeStatutDemandeId = statutDemande.getTypeStatutDemande().getId();
-        return "1".equals(typeStatutDemandeId) || "2".equals(typeStatutDemandeId);
+        return "1".equals(statutDemande.getTypeStatutDemande().getId()) || "2".equals(statutDemande.getTypeStatutDemande().getId());
     }
 
     public boolean isScanTermineByTypeStatutDemandeId(Integer demandeId) {
-        StatutDemande statutDemande = statutDemandeRepository
-                .findFirstByDemandeIdOrderByDateStatutDescIdDesc(demandeId)
-                .orElse(null);
+        StatutDemande statutDemande = getLatestStatutDemande(demandeId);
         if (statutDemande == null || statutDemande.getTypeStatutDemande() == null) {
             return false;
         }
@@ -663,7 +701,7 @@ public class DemandeService {
 
             // Creation du statut de la demande
             StatutDemande statutDemande = new StatutDemande();
-            TypeStatutDemande typeStatutDemande = typeStatutDemandeRepository.findById("3")
+            TypeStatutDemande typeStatutDemande = typeStatutDemandeRepository.findById("4")
                     .orElseThrow(() -> new BusinessValidationException("Type de statut de demande"));
             statutDemande.setTypeStatutDemande(typeStatutDemande);
             statutDemande.setDemande(demande);
@@ -762,5 +800,16 @@ public class DemandeService {
             // Log l'erreur mais ne pas bloquer l'opération principale
             System.err.println("Erreur lors de la génération du QR Code pour la demande #" + demande.getId() + ": " + e.getMessage());
         }
+    }
+
+
+    public void modifierStatutDemande(Demande demande, String typeStatutDemandeId) {
+        StatutDemande statutDemande = new StatutDemande();
+        TypeStatutDemande typeStatutDemande = typeStatutDemandeRepository.findById(typeStatutDemandeId)
+                .orElseThrow(() -> new BusinessValidationException("Type de statut de demande"));
+        statutDemande.setTypeStatutDemande(typeStatutDemande);
+        statutDemande.setDemande(demande);
+        statutDemande.setDateStatut(LocalDate.now());
+        statutDemandeRepository.save(statutDemande);
     }
 }

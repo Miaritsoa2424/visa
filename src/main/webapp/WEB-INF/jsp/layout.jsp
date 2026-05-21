@@ -23,6 +23,9 @@
     <c:if test="${pageStyle == 'dossier-pro'}">
         <link rel="stylesheet" href="/css/dossier-pro.css">
     </c:if>
+    <c:if test="${pageStyle == 'photo-signature'}">
+        <link rel="stylesheet" href="/css/photo-signature.css">
+    </c:if>
 </head>
 <body>
 <aside class="app-sidebar" aria-label="Navigation principale">
