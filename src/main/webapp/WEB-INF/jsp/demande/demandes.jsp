@@ -37,6 +37,11 @@
                             <a class="btn btn-edit js-edit-btn"
                                href="/demande/modifier?id=${demande.id}"
                                data-can-edit="${canEditByDemandeId[demande.id]}">Modifier</a>
+                            
+                            <c:if test="${statutByDemandeId[demande.id] == 'Scan termine'}">
+                                <a class="btn btn-primary" href="/demande/export?id=${demande.id}" download="demande_${demande.id}.pdf">Exporter</a>
+                           </c:if>
+                            
                         </td>
                     </tr>
                 </c:forEach>
