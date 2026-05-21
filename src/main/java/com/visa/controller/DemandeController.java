@@ -1,6 +1,6 @@
 package com.visa.controller;
 
-import com.visa.service.DossierProfessionnelService;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.visa.dto.CreateDemandeDTO;
@@ -35,7 +36,9 @@ import com.visa.repository.PaysRepository;
 import com.visa.repository.VisaRepository;
 import com.visa.service.ChampFournirService;
 import com.visa.service.DemandeService;
+import com.visa.service.DossierProfessionnelService;
 import com.visa.service.NationaliteService;
+
 import com.visa.service.ExportPdfService;
 import org.springframework.web.multipart.MultipartFile;
 import com.visa.service.SituationFamilialeService;
@@ -425,6 +428,44 @@ public class DemandeController {
         model.addAttribute("photoCaptured", false);
         model.addAttribute("id", id);
         return renderPage(model, "Photo et signature", "demande/photo-signature.jsp", "photo-signature");
+    }
+
+    @GetMapping("/demande/attachments")
+    @ResponseBody
+    public List<Map<String, Object>> getAttachmentsForDemande(@RequestParam("demandeId") Integer demandeId) {
+        List<Map<String, Object>> response = new ArrayList<>();
+        List<com.visa.entity.FichierUploade> fichiers = fichierUploadeService.getFilesByDemandeId(demandeId);
+        if (fichiers == null || fichiers.isEmpty()) {
+            return response;
+        }
+
+        for (com.visa.entity.FichierUploade f : fichiers) {
+            Map<String, Object> item = new HashMap<>();
+            String valeur = f.getValeur();
+            // valeur is stored like "assets/dossierPro/...." - build public URL
+            String url = valeur == null ? "" : ("/" + valeur.replaceAll("\\\\", "/"));
+            String filename = valeur == null ? "" : Paths.get(valeur).getFileName().toString();
+            String lower = filename == null ? "" : filename.toLowerCase();
+            String kind = "other";
+            if (lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".gif")) {
+                kind = "image";
+            } else if (lower.endsWith(".pdf")) {
+                kind = "pdf";
+            }
+
+            item.put("id", f.getId());
+            String dossierValeur = "";
+            if (f.getDossierProfessionnel() != null && f.getDossierProfessionnel().getValeur() != null) {
+                dossierValeur = f.getDossierProfessionnel().getValeur();
+            }
+            item.put("dossierValeur", dossierValeur);
+            item.put("filename", filename);
+            item.put("url", url);
+            item.put("kind", kind);
+            response.add(item);
+        }
+
+        return response;
     }
 
     @PostMapping("/demande/photo-signature")
