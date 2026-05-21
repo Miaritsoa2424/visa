@@ -34,6 +34,8 @@
                         <td>
                             <a class="btn btn-edit" href="/demande/photo-signature?id=${demande.id}">Photo et signature</a>
                             
+                            <button class="btn btn-secondary js-view-btn" data-demande-id="${demande.id}">Visualiser</button>
+
                             <a class="btn btn-edit js-edit-btn"
                                href="/demande/modifier?id=${demande.id}"
                                data-can-edit="${canEditByDemandeId[demande.id]}">Modifier</a>
@@ -47,6 +49,15 @@
             <div class="empty-message">Aucune demande trouvee.</div>
         </c:otherwise>
     </c:choose>
+</div>
+<!-- Attachments modal -->
+<div id="attachmentsModalBackdrop" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998"></div>
+<div id="attachmentsModal" style="display:none; position:fixed; inset:10% 20%; background:#fff; z-index:9999; padding:16px; overflow:auto; border-radius:6px; max-height:80%;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h2 style="margin:0">Visualisation de tout les fichiers du dossier</h2>
+        <button id="attachmentsModalClose" style="font-size:20px; background:none; border:none;">&times;</button>
+    </div>
+    <div id="attachmentsList"></div>
 </div>
 <script>
     (function () {
@@ -79,6 +90,97 @@
                 button.textContent = 'Non modifiable';
                 console.log('Modification interdite: le type_statut_demande doit etre egal a 1 ou 2.');
                 button.classList.add('is-disabled');
+            });
+        });
+    })();
+</script>
+<script>
+    (function () {
+        function showModal() {
+            document.getElementById('attachmentsModalBackdrop').style.display = 'block';
+            document.getElementById('attachmentsModal').style.display = 'block';
+        }
+
+        function hideModal() {
+            document.getElementById('attachmentsModalBackdrop').style.display = 'none';
+            document.getElementById('attachmentsModal').style.display = 'none';
+            document.getElementById('attachmentsList').innerHTML = '';
+        }
+
+        document.getElementById('attachmentsModalClose').addEventListener('click', hideModal);
+        document.getElementById('attachmentsModalBackdrop').addEventListener('click', hideModal);
+
+        document.querySelectorAll('.js-view-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                var demandeId = btn.dataset.demandeId;
+                if (!demandeId) return;
+                fetch('/demande/attachments?demandeId=' + encodeURIComponent(demandeId))
+                    .then(function (res) { return res.json(); })
+                    .then(function (files) {
+                        var container = document.getElementById('attachmentsList');
+                        container.innerHTML = '';
+                        if (!files || files.length === 0) {
+                            container.innerHTML = '<p>Aucun fichier trouve pour cette demande.</p>';
+                            showModal();
+                            return;
+                        }
+
+                        files.forEach(function (f) {
+                            var row = document.createElement('div');
+                            row.style.marginBottom = '12px';
+
+                            // Determine a friendly label from dossierValeur
+                            var labelText = 'Fichier';
+                            if (f.dossierValeur) {
+                                var dv = f.dossierValeur.toString();
+                                var v = dv.toLowerCase();
+                                if (v.indexOf('image') !== -1) {
+                                    labelText = 'Photo de la personne';
+                                } else if (v.indexOf('signature') !== -1) {
+                                    labelText = 'Signature de la personne';
+                                } else {
+                                    labelText = dv;
+                                }
+                            }
+
+                            var label = document.createElement('div');
+                            label.textContent = labelText;
+                            label.style.fontWeight = '600';
+                            label.style.marginBottom = '6px';
+                            row.appendChild(label);
+
+                            if (f.kind === 'image') {
+                                var img = document.createElement('img');
+                                img.src = f.url;
+                                img.style.maxWidth = '500px';
+                                img.style.maxHeight = '500px';
+                                img.style.display = 'block';
+                                img.style.marginBottom = '6px';
+                                row.appendChild(img);
+                                var link = document.createElement('a');
+                                link.href = f.url;
+                                link.target = '_blank';
+                                link.textContent = f.filename || 'Ouvrir l\'image';
+                                row.appendChild(link);
+                            } else {
+                                var link = document.createElement('a');
+                                link.href = f.url;
+                                link.target = '_blank';
+                                link.textContent = f.filename || 'Ouvrir le fichier';
+                                row.appendChild(link);
+                            }
+
+                            container.appendChild(row);
+                        });
+
+                        showModal();
+                    })
+                    .catch(function (err) {
+                        console.error('Erreur en recuperant les fichiers:', err);
+                        alert('Erreur lors de la récupération des fichiers.');
+                    });
             });
         });
     })();
