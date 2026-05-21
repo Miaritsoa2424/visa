@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -36,6 +38,9 @@ import com.visa.service.ChampFournirService;
 import com.visa.service.DemandeService;
 import com.visa.service.DossierProfessionnelService;
 import com.visa.service.NationaliteService;
+
+import com.visa.service.ExportPdfService;
+import org.springframework.web.multipart.MultipartFile;
 import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;
 import com.visa.service.TypeVisaService;
@@ -44,6 +49,8 @@ import com.visa.service.UtilService;
 
 @Controller
 public class DemandeController {
+    private static final Logger logger = LoggerFactory.getLogger(DemandeController.class);
+    
     private final DossierProfessionnelService dossierProfessionnelService;
     @Autowired
     private VisaRepository visaRepository;
@@ -69,6 +76,9 @@ public class DemandeController {
 
     private static final String TYPE_STATUT_DEMANDE_SCAN_TERMINE_ID = "2";
 
+    @Autowired
+    private ExportPdfService exportPdfService;
+
     DemandeController(DossierProfessionnelService dossierProfessionnelService) {
         this.dossierProfessionnelService = dossierProfessionnelService;
     }
@@ -90,6 +100,24 @@ public class DemandeController {
         model.addAttribute("statutByDemandeId", statutByDemandeId);
         return renderPage(model, "Liste des demandes", "demande/demandes.jsp", "demandes");
     }
+
+    @GetMapping("/demande/export")
+    public ResponseEntity<byte[]> exportDemandePdf(@RequestParam("id") Integer demandeId) {
+        try {
+            byte[] pdfBytes = exportPdfService.buildPdfForDemande(demandeId);
+            String filename = "demande_" + demandeId + ".pdf";
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .header("Content-Transfer-Encoding", "binary")
+                    .contentLength(pdfBytes.length)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            logger.error("Error exporting PDF for demande ID: " + demandeId, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }    
 
     @GetMapping("/demande/fiche")
     public String ficheDemande(@RequestParam("id") Integer demandeId, Model model,
