@@ -41,7 +41,7 @@ import com.visa.repository.TypeStatutDemandeRepository;
 public class DossierProfessionnelService {
 	private static final Logger log = LoggerFactory.getLogger(DossierProfessionnelService.class);
 
-	private static final String TYPE_STATUT_DEMANDE_SCAN_TERMINE_ID = "2";
+	private static final String TYPE_STATUT_DEMANDE_SCAN_TERMINE_ID = "3";
 	private static final String STATUT_DOSSIER_PRO_SCANNE_LIBELLE = "Scanne";
 	private static final Path DOSSIER_UPLOAD_PATH = Paths.get("assets", "dossierPro");
 
@@ -99,8 +99,8 @@ public class DossierProfessionnelService {
 		modifierStatutDemandeEnScanTermine(demande);
 	}
 
-	private int enregistrerFichiersUploades(DossierProfessionnel dossierProfessionnel, MultipartFile[] fichiers,
-			List<Path> fichiersCopies) {
+	public int enregistrerFichiersUploades(DossierProfessionnel dossierProfessionnel, MultipartFile[] fichiers,
+		    List<Path> fichiersCopies) {
 		if (fichiers == null || fichiers.length == 0) {
 			throw new BusinessValidationException("Aucun fichier n'a ete fourni.");
 		}
@@ -230,6 +230,17 @@ public class DossierProfessionnelService {
 		.collect(Collectors.toList());
     }
 
+	@Transactional(rollbackFor = Exception.class)
+	public DossierProfessionnel saveDossierProfessionnel(DossierProfessionnel dossierProfessionnel) {
+		try {
+			return dossierProfessionnelRepository.save(dossierProfessionnel);
+		} catch (DataIntegrityViolationException exception) {
+			log.error("Erreur lors de l'enregistrement du dossier professionnel", exception);
+			throw new BusinessValidationException("Impossible d'enregistrer le dossier professionnel: "
+					+ exception.getMessage());
+		}
+	}
+
     private DossierProfessionnelStatutDTO toDossierProfessionnelStatutDTO(DossierProfessionnel dossierProfessionnel,
 	    List<StatutDossierProDTO> statuts) {
 	DossierProfessionnelStatutDTO dto = new DossierProfessionnelStatutDTO();
@@ -255,4 +266,5 @@ public class DossierProfessionnelService {
 		: dossierProStatut.getStatutDossierPro().getLibelle());
 	return dto;
     }
+
 }

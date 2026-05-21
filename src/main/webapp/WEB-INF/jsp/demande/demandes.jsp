@@ -17,6 +17,7 @@
                     <th>Numéro passeport</th>
                     <th>Type visa</th>
                     <th>Type demande</th>
+                    <th>Statut</th>
                     <th>Action</th>
                 </tr>
                 </thead>
@@ -29,7 +30,10 @@
                         <td>${demande.passeport.numero}</td>
                         <td>${demande.typeVisa.libelle}</td>
                         <td>${demande.typeDemande.libelle}</td>
+                        <td>${statutByDemandeId[demande.id]}</td>
                         <td>
+                            <a class="btn btn-edit" href="/demande/photo-signature?id=${demande.id}">Photo et signature</a>
+                            
                             <a class="btn btn-edit js-edit-btn"
                                href="/demande/modifier?id=${demande.id}"
                                data-can-edit="${canEditByDemandeId[demande.id]}">Modifier</a>
@@ -65,12 +69,15 @@
         editButtons.forEach(function (button) {
             button.addEventListener('click', function (event) {
                 const canEdit = button.dataset.canEdit === 'true';
+                console.log('Can edit:', canEdit, 'for button with href:', button.getAttribute('href'));
                 if (canEdit) {
+                    console.log('Modification autorisee pour cette demande.');
                     return;
                 }
 
                 event.preventDefault();
                 button.textContent = 'Non modifiable';
+                console.log('Modification interdite: le type_statut_demande doit etre egal a 1 ou 2.');
                 button.classList.add('is-disabled');
             });
         });

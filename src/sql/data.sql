@@ -34,8 +34,9 @@ VALUES
 INSERT INTO type_statut_demande (id, libelle)
 VALUES
 	('1', 'Cree'),
-	('2', 'Scan termine'),
-	('3', 'Visa validee');
+	('2', 'photo et signature'),
+	('3', 'Scan termine'),
+	('4', 'Visa validee');
 INSERT INTO type_statut_visa (id, libelle, rang)
 VALUES
 	('1', 'Actif', 1),
@@ -46,6 +47,12 @@ VALUES
 	('Justificatif Ressources', 'TEXT', 1),
 	('Contrat Travail', 'PDF', 2),
 	('SIRET Employeur', 'TEXT', 2);
+
+-- INSERT INTO champ_fournir (libelle, type_donnee)
+-- VALUES
+-- 	('Photo', 'String'),
+-- 	('Signature', 'String');
+
 
 -- 1 & 2. Personnes avec visa etudiant deja valide
 -- INSERT INTO personne (nom, prenom, email, date_naissance, lieu_naissance, adresse, telephone, nationalite_id, situation_familiale_id)
@@ -118,4 +125,8 @@ VALUES
     ('Non coche'),
     ('Coche'),
     ('Scanne');
+
+-- 	INSERT INTO fichier_uploade (valeur, dossier_professionnel_id)
+-- VALUES
+-- 	('4_a994174134604d788bb62adb84c713ec_photo.png ', 6);
 

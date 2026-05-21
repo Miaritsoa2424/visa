@@ -12,4 +12,6 @@ public interface DossierProfessionnelRepository extends JpaRepository<DossierPro
 	List<DossierProfessionnel> findByDemandeId(Integer demandeId);
 
 	void deleteByDemandeId(Integer demandeId);
+
+	List<DossierProfessionnel> findByDemandeIdAndValeurContainingIgnoreCase(Integer demandeId, String valeur);
 }

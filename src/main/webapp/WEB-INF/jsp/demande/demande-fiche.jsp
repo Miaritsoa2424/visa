@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <div class="page">
     <div class="hero">
@@ -147,6 +148,37 @@
                 <c:if test="${demande == null || demande.id == null}">
                     <p>Le QR Code n'est pas disponible pour cette demande.</p>
                 </c:if>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Photos & Signatures</h2>
+            <div class="summary">
+                <c:choose>
+                    <c:when test="${not empty fichiersUplodes}">
+                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                            <c:forEach items="${fichiersUplodes}" var="fichier">
+                                <c:choose>
+                                    <c:when test="${fn:endsWith(fichier.valeur, '.png') || fn:endsWith(fichier.valeur, '.jpg') || fn:endsWith(fichier.valeur, '.jpeg')}">
+                                        <div style="width:220px;border:1px solid #e6e6e6;padding:8px;border-radius:8px;background:#fff;text-align:center;">
+                                            <img src="/${fichier.valeur}" alt="Fichier" style="max-width:100%;height:auto;display:block;margin:0 auto 8px;"/>
+                                            <div style="font-size:12px;color:#666;word-break:break-all;">${fichier.valeur}</div>
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div style="padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;">
+                                            <a href="/${fichier.valeur}" target="_blank">Ouvrir le fichier</a>
+                                            <div style="font-size:12px;color:#666;">${fichier.valeur}</div>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:forEach>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <p>Aucune photo ou signature n'a ete enregistree pour cette demande.</p>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
 

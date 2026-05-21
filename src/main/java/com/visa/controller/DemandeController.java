@@ -1,5 +1,6 @@
 package com.visa.controller;
 
+import com.visa.service.DossierProfessionnelService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,18 +21,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.visa.dto.CreateDemandeDTO;
+import com.visa.entity.Base64MultipartFilePerso;
 import com.visa.entity.ChampFournir;
 import com.visa.entity.Demande;
+import com.visa.entity.DossierProfessionnel;
 import com.visa.entity.Personne;
 import com.visa.entity.TypeDemande;
 import com.visa.entity.Visa;
 import com.visa.exception.BusinessValidationException;
 import com.visa.repository.PaysRepository;
-import com.visa.repository.PersonneRepository;
 import com.visa.repository.VisaRepository;
 import com.visa.service.ChampFournirService;
 import com.visa.service.DemandeService;
 import com.visa.service.NationaliteService;
+import org.springframework.web.multipart.MultipartFile;
 import com.visa.service.SituationFamilialeService;
 import com.visa.service.TypeDemandeService;
 import com.visa.service.TypeVisaService;
@@ -40,19 +43,18 @@ import com.visa.service.UtilService;
 
 @Controller
 public class DemandeController {
-    @Autowired
-    private PersonneRepository personneRepository;
+    private final DossierProfessionnelService dossierProfessionnelService;
     @Autowired
     private VisaRepository visaRepository;
     @Autowired
     private PaysRepository paysRepository;
-    @Autowired
-    private com.visa.repository.DemandeRepository demandeRepository;
 
     private static final Integer TRANSFERT_TYPE_DEMANDE_ID = 4;
 
     @Autowired
     private DemandeService demandeService;
+    @Autowired
+    private com.visa.service.FichierUploadeService fichierUploadeService;
     @Autowired
     private NationaliteService nationaliteService;
     @Autowired
@@ -64,9 +66,11 @@ public class DemandeController {
     @Autowired
     private ChampFournirService champFournirService;
 
-    // DemandeController(PersonneRepository personneRepository) {
-    // this.personneRepository = personneRepository;
-    // }
+    private static final String TYPE_STATUT_DEMANDE_SCAN_TERMINE_ID = "2";
+
+    DemandeController(DossierProfessionnelService dossierProfessionnelService) {
+        this.dossierProfessionnelService = dossierProfessionnelService;
+    }
 
     @GetMapping("/demandes")
     public String listDemandes(Model model) {
@@ -75,9 +79,14 @@ public class DemandeController {
                 .collect(Collectors.toMap(
                         Demande::getId,
                         demande -> demandeService.canEditDemandeByTypeStatutDemande(demande.getId())));
+        Map<Integer, String> statutByDemandeId = demandes.stream()
+            .collect(Collectors.toMap(
+                Demande::getId,
+                demande -> demandeService.getStatutDemandeLibelle(demande.getId())));
 
         model.addAttribute("demandes", demandes);
         model.addAttribute("canEditByDemandeId", canEditByDemandeId);
+        model.addAttribute("statutByDemandeId", statutByDemandeId);
         return renderPage(model, "Liste des demandes", "demande/demandes.jsp", "demandes");
     }
 
@@ -99,6 +108,9 @@ public class DemandeController {
             model.addAttribute("selectedChampFournirIds", demandeService.getSelectedChampFournirIds(demandeId));
             model.addAttribute("champsFournirWithStatus", demandeService.getChampsFournirWithStatus(demandeId));
             model.addAttribute("canEdit", demandeService.canEditDemandeByTypeStatutDemande(demandeId));
+
+            // Charger les fichiers uploade associes a cette demande (images, signatures, etc.)
+            model.addAttribute("fichiersUplodes", fichierUploadeService.getFilesByDemandeId(demandeId));
 
             return renderPage(model, "Fiche demande", "demande/demande-fiche.jsp", "demande-confirmation");
         } catch (BusinessValidationException exception) {
@@ -327,11 +339,11 @@ public class DemandeController {
     public String editDemande(@RequestParam("id") Integer demandeId, Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            if (!demandeService.canOpenModifierPageByTypeStatutDemande(demandeId)) {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "Modification interdite: le type_statut_demande doit etre egal a 1 ou 2.");
-                return "redirect:/demandes";
-            }
+            // if (!demandeService.canOpenModifierPageByTypeStatutDemande(demandeId)) {
+            //     redirectAttributes.addFlashAttribute("errorMessage",
+            //             "Modification interdite: le type_statut_demande doit etre egal a 1 ou 2.");
+            //     return "redirect:/demandes";
+            // }
 
             Demande demande = demandeService.getDemandeById(demandeId);
             Integer typeDemandeId = demande.getTypeDemande() == null ? null : demande.getTypeDemande().getId();
@@ -354,7 +366,9 @@ public class DemandeController {
             model.addAttribute("nationalites", nationaliteService.getNationalites());
             model.addAttribute("situationsFamiliales", situationFamilialeService.getSituationsFamiliales());
             model.addAttribute("typesVisa", typeVisaService.getTypesVisa());
-            model.addAttribute("isScanTermine", demandeService.isScanTermineByTypeStatutDemandeId(demandeId));
+            // model.addAttribute("isScanTermine", demandeService.isScanTermineByTypeStatutDemandeId(demandeId));
+            model.addAttribute("isScanTermine", false);
+
 
             return renderPage(model, "Modifier demande", "demande/modifier-demande.jsp", "demande-form");
         } catch (BusinessValidationException exception) {
@@ -378,6 +392,60 @@ public class DemandeController {
         }
 
         return response;
+    }
+
+    @GetMapping("/demande/photo-signature")
+    public String photoSignaturePage(@RequestParam("id") Integer id, Model model) {
+        model.addAttribute("photoCaptured", false);
+        model.addAttribute("id", id);
+        return renderPage(model, "Photo et signature", "demande/photo-signature.jsp", "photo-signature");
+    }
+
+    @PostMapping("/demande/photo-signature")
+    public String submitPhotoSignature(@RequestParam(value = "photoData", required = false) String photoData,
+            @RequestParam(value = "signatureData", required = false) String signatureData,
+            @RequestParam(value = "id") Integer id,
+            Model model) {
+
+        try {
+            Demande demande = demandeService.getDemandeById(id);
+            if (demande == null) {
+                model.addAttribute("errorMessage", "Demande introuvable.");
+                return renderPage(model, "Photo et signature", "demande/photo-signature.jsp", "photo-signature");
+            }
+
+            DossierProfessionnel dossier = new DossierProfessionnel();
+            dossier.setDemande(demande);
+            dossier.setValeur("Image");
+            DossierProfessionnel saved = dossierProfessionnelService.saveDossierProfessionnel(dossier);
+
+            DossierProfessionnel signature = new DossierProfessionnel();
+            signature.setDemande(demande);
+            signature.setValeur("Signature");
+            DossierProfessionnel savedSignature = dossierProfessionnelService.saveDossierProfessionnel(signature);
+
+            // Construire des MultipartFile depuis les données base64
+            MultipartFile photoFile = new Base64MultipartFilePerso("photo.png", photoData);
+            MultipartFile signatureFile = new Base64MultipartFilePerso("signature.png", signatureData);
+
+            java.util.List<java.nio.file.Path> copies = new ArrayList<>();
+            // Appel de la methode qui copie les fichiers et enregistre les entites FichierUploade
+            dossierProfessionnelService.enregistrerFichiersUploades(saved, new MultipartFile[] { photoFile}, copies);
+
+            dossierProfessionnelService.enregistrerFichiersUploades(savedSignature, new MultipartFile[] { signatureFile}, copies);
+
+            demandeService.modifierStatutDemande(demande, TYPE_STATUT_DEMANDE_SCAN_TERMINE_ID); // Passer le statut de la demande à "photo et signature"
+
+            model.addAttribute("successMessage", "Photo et signature captures avec succes.");
+            model.addAttribute("photoData", photoData);
+            model.addAttribute("signatureData", signatureData);
+            model.addAttribute("photoCaptured", photoData != null && !photoData.isBlank());
+            model.addAttribute("signatureCaptured", signatureData != null && !signatureData.isBlank());
+            return renderPage(model, "Photo et signature", "demande/photo-signature.jsp", "photo-signature");
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Erreur lors de l'enregistrement: " + e.getMessage());
+            return renderPage(model, "Photo et signature", "demande/photo-signature.jsp", "photo-signature");
+        }
     }
 
     @GetMapping("/qrcode/{demandeId}")
@@ -513,24 +581,6 @@ public class DemandeController {
         model.addAttribute("contentPage", contentPage);
         model.addAttribute("pageStyle", pageStyle);
         return "layout";
-    }
-
-    private String renderTransferPlaceholderPage(String typeDemandeIdParam, Model model, String pageTitle,
-            String description, String contentPage) {
-        Integer typeDemandeId = UtilService.parseTypeDemandeId(typeDemandeIdParam);
-        if (typeDemandeId == null) {
-            return "redirect:/home";
-        }
-
-        TypeDemande typeDemande = typeDemandeService.getById(typeDemandeId);
-        if (!isTransfertType(typeDemande)) {
-            return "redirect:/demande/nouvelle?typeDemandeId=" + typeDemandeId;
-        }
-
-        model.addAttribute("typeDemande", typeDemande);
-        model.addAttribute("typeDemandeId", typeDemandeId);
-        model.addAttribute("description", description);
-        return renderPage(model, pageTitle, contentPage, "demande-form");
     }
 
     private boolean isTransfertType(TypeDemande typeDemande) {
